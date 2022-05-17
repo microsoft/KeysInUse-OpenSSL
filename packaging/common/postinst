@@ -1,0 +1,32 @@
+#!/bin/sh -e
+
+case $1 in
+  configure | 1 | 2)
+  # Create a directory for keys in use logs
+  if [ ! -e /var/log/keysinuse ]; then
+    mkdir /var/log/keysinuse
+  fi
+  chown root:root /var/log/keysinuse
+  chmod 1733 /var/log/keysinuse
+
+  # Place keysinuse engine in appropriate engine dir
+  cp /usr/lib/keysinuse/keysinuse.so $(/usr/bin/openssl version -e | awk '{gsub(/"/, "", $2); print $2}')
+
+  # Save a copy of the old config before we attempt to update it
+  config=$(/usr/bin/openssl version -d | awk '{gsub(/"/, "", $2); print $2}')/openssl.cnf
+  config=$(readlink -f $config)
+
+  if [ -x $config ]; then
+    cp $config $config.prekeysinuse
+  else
+    touch $config
+  fi
+
+  # Configure OpenSSL to use the engine
+  if [ -x /usr/lib/keysinuse/keysinuseutil ]; then
+    echo "Enabling keysinuse engine for OpenSSL"
+    /usr/lib/keysinuse/keysinuseutil -update-default install|| echo "Configuring engine failed"
+  fi
+esac
+
+exit 0

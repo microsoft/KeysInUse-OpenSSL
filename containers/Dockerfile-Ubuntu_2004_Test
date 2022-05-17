@@ -1,0 +1,16 @@
+FROM undefined/local/mariner-glibc:latest AS keysinuse_base
+
+FROM ubuntu:20.04
+
+ENV LSAN_OPTIONS=exitcode=0
+
+RUN apt-get update
+RUN apt-get install -y openssl libasan5
+
+RUN mkdir /usr/lib/keysinuse
+COPY --from=keysinuse_base /usr/lib/keysinuse /usr/lib/keysinuse
+RUN /usr/lib/keysinuse/installkeysinuse configure
+
+COPY --from=keysinuse_base /keysinuse-openssl/bin/test/keysinuse_functional /
+
+ENTRYPOINT [ "/keysinuse_functional" ]

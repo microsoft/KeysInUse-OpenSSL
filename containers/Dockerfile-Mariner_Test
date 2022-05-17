@@ -1,0 +1,15 @@
+FROM undefined/local/mariner-glibc:latest AS keysinuse_base
+
+FROM mcr.microsoft.com/cbl-mariner/base/core:1.0
+
+ENV LSAN_OPTIONS=exitcode=0
+
+RUN tdnf install -y build-essential
+
+RUN mkdir /usr/lib/keysinuse
+COPY --from=keysinuse_base /usr/lib/keysinuse /usr/lib/keysinuse
+RUN /usr/lib/keysinuse/installkeysinuse configure
+
+COPY --from=keysinuse_base /keysinuse-openssl/bin/test/keysinuse_functional /
+
+ENTRYPOINT [ "/keysinuse_functional" ]

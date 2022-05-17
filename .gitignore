@@ -1,0 +1,8 @@
+.vscode
+bin
+lib
+build*
+*.log
+packaging/*.deb
+packaging/*.rpm
+pkg

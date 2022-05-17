@@ -1,0 +1,16 @@
+{
+  "tool": "Credential Scanner",
+  "suppressions": [
+    {
+      "file": [
+        "\\test\\certs\\eccplayclient_key.pem",
+        "\\test\\certs\\eccplayserver_key.pem",
+        "\\test\\certs\\playclient_key.pem",
+        "\\test\\certs\\playclient_public.key",
+        "\\test\\certs\\playserver_key.pem",
+        "\\test\\common\\keys.cpp"
+      ],
+      "_justification": "Dummy keys for testing purposes"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+# This base image is meant to test keys-in-use integration
+# with a cloud native component suche as the kubernetes 
+# ingress nginx controller
+
+# Get keysinuse base image
+FROM local/alpine-musl:latest AS keysinuse_base
+# Last instance of 'FROM' in the dockerfile is the base image used for
+# the finished image.
+FROM k8s.gcr.io/ingress-nginx/controller:v1.1.1
+
+# Elevate to install keysinuse. (Base image is defaulted to www-data)
+USER root
+
+# Copy files from base image
+RUN mkdir /usr/lib/keysinuse
+COPY --from=keysinuse_base /usr/lib/keysinuse /usr/lib/keysinuse
+COPY --from=keysinuse_base /keysinuse-openssl/bin/test/keysinuse_functional /
+
+# Run install script
+RUN /usr/lib/keysinuse/installkeysinuse configure
+
+# Revert to container's original user level
+USER www-data

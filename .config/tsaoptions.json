@@ -1,0 +1,12 @@
+{
+    "instanceUrl": "https://microsoft.visualstudio.com",
+    "projectName": "OS",
+    "areaPath":  "OS\\Core\\ENS\\Crypto, Identity, Auth\\SSL, Certs, Keys and Crypto\\Certs\\Linux Certificates",
+    "iterationPath":  "OS",
+    "notificationAliases": [
+        "mamckee@microsoft.com"
+    ],
+    "template": "VSTS_Microsoft_OSGS",
+    "repositoryName": "KeysInUse-OpenSSL",
+    "codebaseName": "KeysInUse-OpenSSL"
+}

@@ -1,0 +1,13 @@
+FROM undefined/local/alpine-musl:latest AS keysinuse_base
+
+FROM alpine
+
+RUN apk add openssl libgcc libstdc++
+
+RUN mkdir /usr/lib/keysinuse
+COPY --from=keysinuse_base /usr/lib/keysinuse /usr/lib/keysinuse
+RUN /usr/lib/keysinuse/installkeysinuse configure
+
+COPY --from=keysinuse_base /keysinuse-openssl/bin/test/keysinuse_functional /
+
+ENTRYPOINT [ "/keysinuse_functional" ]

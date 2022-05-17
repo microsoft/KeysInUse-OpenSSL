@@ -1,0 +1,17 @@
+{
+    "Registrations": [
+        {
+            "Component": {
+                "Type": "linux",
+                "Linux": {
+                    "Name": "libssl-dev",
+                    "Version": "1.1.1f-1ubuntu2.12",
+                    "Distribution": "Ubuntu",
+                    "Release": "20.04"
+                },
+                "SourceRepo": "http://azure.archive.ubuntu.com/ubuntu focal-updates/main amd64 Packages",
+                "DevelopmentDependency": false
+            }
+        }
+    ]
+}

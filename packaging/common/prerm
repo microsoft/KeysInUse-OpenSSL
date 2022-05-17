@@ -1,0 +1,18 @@
+#!/bin/bash -e
+
+case $1 in
+  remove | upgrade | 0)
+  # Deconfigure engine
+  if [ -x /usr/lib/keysinuse/keysinuseutil ]; then
+    echo "Disabling keysinuse engine for OpenSSL"
+    /usr/lib/keysinuse/keysinuseutil -update-default uninstall || echo "Deconfiguring keysinuse engine failed"
+  fi
+
+  # Remove engine from openssl engines directory
+  copied_engine=$(/usr/bin/openssl version -e | awk '{gsub(/"/, "", $2); print $2}')/keysinuse.so
+  if [ -e $copied_engine ]; then
+    rm $copied_engine
+  fi
+esac
+
+exit 0

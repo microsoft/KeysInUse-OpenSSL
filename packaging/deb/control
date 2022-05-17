@@ -1,0 +1,8 @@
+Package: PACKAGE
+Version: VERSION
+Section: admin
+Priority: optional
+Architecture: ARCH
+Depends: libc6, openssl (>= 1.1.1), openssl (<< 1.1.2)
+Maintainer: Microsoft Corp
+Description: KeysInUse engine for OpenSSL logs private key usage locally
