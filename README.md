@@ -1,4 +1,5 @@
-# Build and Release Status
+# KeysInUse Engine for OpenSSL
+The KeysInUse Engine for OpenSSL logs the use of private key operations through OpenSSL. The engine logs a hash of the public key, which can be used by application owners to monitor which of their certs and keys are in active use. The engine logs key usage events locally, and passes the operation through to the underlying, default crypto implementation.
 
 # Installation
 ## Debian/Ubuntu
