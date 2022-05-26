@@ -4,18 +4,13 @@ GOFLAGS_COMMON=-ldflags "-linkmode external"
 
 BLD_DIR=$(shell realpath ../../)/bin
 KEYSINUSEUTIL=$(BLD_DIR)/keysinuseutil
-PKGUPLOAD=$(BLD_DIR)/pkgupload
 
-all: $(KEYSINUSEUTIL) $(PKGUPLOAD)
+all: $(KEYSINUSEUTIL)
 
 $(KEYSINUSEUTIL):
 	go build $(GOFLAGS_COMMON) -o $(KEYSINUSEUTIL) ./keysinuseutil
-
-$(PKGUPLOAD):
-	go build $(GOFLAGS_COMMON) -o $(PKGUPLOAD) ./pkgupload
-
 clean:
-	sudo rm -f $(KEYSINUSEUTIL) $(PKGUPLOAD)
+	sudo rm -f $(KEYSINUSEUTIL)
 
 .PHONY:
 	all

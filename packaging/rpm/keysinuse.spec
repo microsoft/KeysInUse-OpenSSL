@@ -6,7 +6,7 @@ Release:     LABEL
 Summary:     KeysInUse solution for OpenSSL
 
 Group:       Productivity/Security
-License:     Apache
+License:     MIT
 URL:         www.microsoft.com
 Source0:     %{name}-%{version}.tgz
 BuildRoot:   %{_tmppath}/%{name}-%{version}-%{release}-buildroot
