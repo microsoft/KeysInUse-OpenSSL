@@ -21,6 +21,7 @@ DATAROOT=$(BUILD_TMP)/data-root
 FAKEROOT=$(DATAROOT)/$(PACKAGE)-$(VERSION)
 DOCDIR=$(FAKEROOT)/usr/share/doc/$(PACKAGE)
 LIBDIR=$(FAKEROOT)/usr/lib/keysinuse
+BINDIR=$(FAKEROOT)/usr/bin
 
 RPM=$(BUILD_TMP)/RPMS/$(ARCH)/$(PACKAGE)-$(VERSION)-$(LABEL).$(ARCH).rpm
 
@@ -64,6 +65,6 @@ install-clean:
 	-rm -rf $(DATAROOT)
 
 install-deps: install-clean	$(EXECS)
-	mkdir -p $(LIBDIR)
-	install -m 755 $(UTIL) /usr/bin
+	mkdir -p $(LIBDIR) $(BINDIR)
+	install -m 755 $(UTIL) $(BINDIR)
 	install -m 755 $(ENGINE) $(LIBDIR)

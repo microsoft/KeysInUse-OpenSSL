@@ -7,7 +7,7 @@ RUN apk add openssl libgcc libstdc++
 RUN mkdir /keysinuse
 RUN mkdir /usr/lib/keysinuse
 COPY --from=keysinuse_base /keysinuse /keysinuse
-RUN mv /keysinuse /usr/lib/keysinuse
+RUN mv /keysinuse/keysinuse.so /usr/lib/keysinuse.so
 RUN /keysinuse/installkeysinuse configure
 
 COPY --from=keysinuse_base /keysinuse-openssl/bin/test/keysinuse_functional /
