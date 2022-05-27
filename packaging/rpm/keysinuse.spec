@@ -35,7 +35,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 /usr/share/doc/keysinuse/ChangeLog
-/usr/lib/keysinuse/keysinuseutil
+/usr/bin/keysinuseutil
 /usr/lib/keysinuse/keysinuse.so
 
 %changelog

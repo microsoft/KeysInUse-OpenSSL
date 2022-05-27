@@ -54,7 +54,7 @@ install-clean:
 
 $(FAKEROOT): install-clean $(UTIL)
 	mkdir -p $(LIBDIR) $(DOCDIR)
-	install -m 755 $(UTIL) $(LIBDIR)
+	install -m 755 $(UTIL) /usr/bin
 	install -m 644 $(ENGINE) $(LIBDIR)
 	cp ../../LICENSE $(DOCDIR)/copyright
 	cat $(PKG_COMMON)/changelog | gzip -9 > $(DOCDIR)/changelog.Debian.gz

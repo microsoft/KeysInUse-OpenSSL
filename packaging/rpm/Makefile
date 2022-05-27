@@ -65,5 +65,5 @@ install-clean:
 
 install-deps: install-clean	$(EXECS)
 	mkdir -p $(LIBDIR)
-	install -m 755 $(UTIL) $(LIBDIR)
+	install -m 755 $(UTIL) /usr/bin
 	install -m 755 $(ENGINE) $(LIBDIR)

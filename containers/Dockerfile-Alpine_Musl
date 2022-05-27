@@ -23,8 +23,8 @@ WORKDIR /keysinuse-openssl/packaging
 RUN make /keysinuse-openssl/bin/keysinuseutil
 
 # Copy files to staging
-RUN mkdir /usr/lib/keysinuse
-RUN cp /keysinuse-openssl/bin/keysinuse.so            /usr/lib/keysinuse
-RUN cp /keysinuse-openssl/bin/keysinuseutil           /usr/lib/keysinuse
-RUN cp /keysinuse-openssl/packaging/common/postinst    /usr/lib/keysinuse/installkeysinuse
-RUN chmod 0755 /usr/lib/keysinuse/installkeysinuse
+RUN mkdir /keysinuse
+RUN cp /keysinuse-openssl/bin/keysinuse.so            /keysinuse
+RUN cp /keysinuse-openssl/bin/keysinuseutil           /keysinuse
+RUN cp /keysinuse-openssl/packaging/common/postinst   /keysinuse/installkeysinuse
+RUN chmod 0755 /keysinuse/installkeysinuse
