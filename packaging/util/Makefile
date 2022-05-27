@@ -4,13 +4,17 @@ GOFLAGS_COMMON=-ldflags "-linkmode external"
 
 BLD_DIR=$(shell realpath ../../)/bin
 KEYSINUSEUTIL=$(BLD_DIR)/keysinuseutil
+KEYID=$(BLD_DIR)/keyid
 
-all: $(KEYSINUSEUTIL)
+all: $(KEYSINUSEUTIL) $(KEYID)
 
 $(KEYSINUSEUTIL):
 	go build $(GOFLAGS_COMMON) -o $(KEYSINUSEUTIL) ./keysinuseutil
+
+$(KEYID):
+	go build $(GOFLAGS_COMMON) -o $(KEYID) ./keyid
 clean:
-	sudo rm -f $(KEYSINUSEUTIL)
+	sudo rm -f $(KEYSINUSEUTIL) $(KEYID)
 
 .PHONY:
 	all
