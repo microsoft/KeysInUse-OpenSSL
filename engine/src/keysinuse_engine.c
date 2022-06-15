@@ -95,10 +95,10 @@ static void  init_once()
         goto err;
     }
 
-    int i, success;
+    int success = 0;
     long num_val = 0;
     char *string_val = NULL;
-    for (i = 0; i < (sizeof(supported_cmds) / sizeof(ENGINE_CMD_DEFN)) && supported_cmds[i].cmd_num != 0; i++)
+    for (int i = 0; i < (sizeof(supported_cmds) / sizeof(ENGINE_CMD_DEFN)) && supported_cmds[i].cmd_num != 0; i++)
     {
         if (supported_cmds[i].cmd_flags & ENGINE_CMD_FLAG_STRING)
         {

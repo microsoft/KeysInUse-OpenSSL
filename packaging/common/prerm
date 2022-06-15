@@ -2,7 +2,7 @@
 
 case $1 in
   remove | upgrade | 0)
-  # Deconfigure enginepo
+  # Deconfigure engine
   if [ -x /usr/bin/keysinuseutil ]; then
     echo "Disabling keysinuse engine for OpenSSL"
     /usr/bin/keysinuseutil -update-default uninstall || echo "Deconfiguring keysinuse engine failed"
