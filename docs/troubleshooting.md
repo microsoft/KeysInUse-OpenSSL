@@ -17,7 +17,7 @@
 The keysinuse engine and scanner verify the permissions on logging files in directories to prevent tampering. The logging directory permissions should be `1733`, and the log files should be `0200`. The log files are separated by the UID of the applicaiton as well. Check that the owner and group of a file match the UID embedded in the file name (`keysinuse_<logging_level>_<uid>_<logging_id>.log`). Also check the user of the application writing the events, and the file it's attempting to write to.
 
 ## Config files
-The keysinuse engine is enabled via the global OpenSSL config. During install, a separate config file is created at `/usr/lib/keysinuse/keysinuse.cnf` and is included in the global config using the `.include` directive. The contents of the file should look something like this:
+The keysinuse engine is enabled via the global OpenSSL config. During install, a separate config file is created at `/etc/keysinuse.cnf` and is included in the global config using the `.include` directive. The contents of the file should look something like this:
 ```dosini
 [ openssl_init ]
 engines = engine_section
@@ -43,10 +43,10 @@ If the engine won't load at all, or OpenSSL continues crashing on config load, e
     - Debian: `dpkg -r keysinuse`
     - RPM: `rpm -e keysinuse`
 2. Use the keysinuse util to disable the engine without uninstalling  
-    - `/usr/lib/keysinuse/keysinuseutil -update-default uninstall`
+    - `/usr/bin/keysinuseutil -update-default uninstall`
 3. Disable the engine from the config manually  
     a) Open the OpenSSL config  
     b) Comment out/delete the line including the keysinuse config file
-      - e.g. `.include /usr/lib/keysinuse/keysinuse.cnf`
+      - e.g. `.include /etc/keysinuse.cnf`
 
 Remember to reload/restart any services that were using the engine for the changes to take effect

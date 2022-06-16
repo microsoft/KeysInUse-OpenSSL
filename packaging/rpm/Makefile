@@ -3,8 +3,6 @@ include ../makeenv
 
 LABEL?=~dev
 CONFIG?=x86_64
-PKG_COMMON=../common
-PKG_DIR=../../pkg
 
 ifeq ($(CONFIG),aarch64)
 ARCH=aarch64
@@ -16,11 +14,17 @@ TARGET=x86_64-microsoft-linux
 BLD_DIR=../../bin
 endif
 
-BUILD_TMP=$(abspath ../../build-tmp/)
+PROJECT_ROOT=$(abspath ../../)
+BUILD_TMP=$(PROJECT_ROOT)/build-tmp/
 DATAROOT=$(BUILD_TMP)/data-root
 FAKEROOT=$(DATAROOT)/$(PACKAGE)-$(VERSION)
 DOCDIR=$(FAKEROOT)/usr/share/doc/$(PACKAGE)
+LICENSEDIR=$(FAKEROOT)/usr/share/licenses/$(PACKAGE)
 LIBDIR=$(FAKEROOT)/usr/lib/keysinuse
+BINDIR=$(FAKEROOT)/usr/bin
+
+PKG_COMMON=$(PROJECT_ROOT)/packaging/common
+PKG_DIR=$(PROJECT_ROOT)/pkg
 
 RPM=$(BUILD_TMP)/RPMS/$(ARCH)/$(PACKAGE)-$(VERSION)-$(LABEL).$(ARCH).rpm
 
@@ -33,10 +37,16 @@ $(RPM): $(TARBALL)
 	mkdir -p $(PKG_DIR)
 	rpmbuild -v -bb --clean --define "_topdir $(BUILD_TMP)" $(BUILD_TMP)/SPECS/keysinuse.spec
 
-$(TARBALL): rpm_prepare install-deps $(DOCDIR)/ChangeLog
+$(TARBALL): rpm_prepare install-deps $(DOCDIR)/ChangeLog $(LICENSEDIR)/LICENSE
 	find $(FAKEROOT) -type d | xargs chmod 0755
 	find $(FAKEROOT) -type d | xargs chmod ug-s
 	cd $(DATAROOT) && tar -czf $@ *
+
+$(LICENSEDIR):
+	mkdir -p $@
+
+$(LICENSEDIR)/LICENSE: $(PROJECT_ROOT)/LICENSE $(LICENSEDIR)
+	cp $< $@
 
 $(DOCDIR):
 	mkdir -p $@
@@ -64,6 +74,6 @@ install-clean:
 	-rm -rf $(DATAROOT)
 
 install-deps: install-clean	$(EXECS)
-	mkdir -p $(LIBDIR)
-	install -m 755 $(UTIL) $(LIBDIR)
+	mkdir -p $(LIBDIR) $(BINDIR)
+	install -m 755 $(UTIL) $(BINDIR)
 	install -m 755 $(ENGINE) $(LIBDIR)

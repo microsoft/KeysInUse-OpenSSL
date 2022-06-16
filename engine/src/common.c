@@ -66,8 +66,7 @@ int generate_key_id(unsigned char *der, size_t size, char key_identifier[KEY_IDE
     }
 
     // Don't need the entire hash to uniquely identify key.
-    int i;
-    for (i = 0; i < TRUNCATED_DIGEST_LENGTH; i++)
+    for (int i = 0; i < TRUNCATED_DIGEST_LENGTH; i++)
     {
         int b = (*hash_bytes_ptr & 0xF0) >> 4;
         *tmp_key_identifier++ = (char)((b <= 9) ? b + L'0' : (b - 10) + L'a');

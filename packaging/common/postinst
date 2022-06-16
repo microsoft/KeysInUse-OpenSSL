@@ -9,8 +9,8 @@ case $1 in
   chown root:root /var/log/keysinuse
   chmod 1733 /var/log/keysinuse
 
-  # Place keysinuse engine in appropriate engine dir
-  cp /usr/lib/keysinuse/keysinuse.so $(/usr/bin/openssl version -e | awk '{gsub(/"/, "", $2); print $2}')
+  # Link to engine from engines directory
+  ln -s /usr/lib/keysinuse/keysinuse.so $(/usr/bin/openssl version -e | awk '{gsub(/"/, "", $2); print $2}')/keysinuse.so 
 
   # Save a copy of the old config before we attempt to update it
   config=$(/usr/bin/openssl version -d | awk '{gsub(/"/, "", $2); print $2}')/openssl.cnf
@@ -23,9 +23,15 @@ case $1 in
   fi
 
   # Configure OpenSSL to use the engine
-  if [ -x /usr/lib/keysinuse/keysinuseutil ]; then
+  if [ -x /usr/bin/keysinuseutil ]; then
     echo "Enabling keysinuse engine for OpenSSL"
-    /usr/lib/keysinuse/keysinuseutil -update-default install|| echo "Configuring engine failed"
+    /usr/bin/keysinuseutil -update-default install || echo "Configuring engine failed"
+  fi
+
+  # Config used to reside in /usr/lib/keysinuse. Create symlink for
+  # backwards compat and discoverability
+  if [ -e /etc/keysinuse/keysinuse.cnf ]; then
+    ln -s /etc/keysinuse/keysinuse.cnf /usr/lib/keysinuse/keysinuse.cnf
   fi
 esac
 

@@ -1,4 +1,5 @@
 #include "keysinuse_engine.h"
+#include "logging.h"
 
 #ifndef OPENSSL_NO_RSA
 #include <openssl/rsa.h>
@@ -12,7 +13,7 @@
 #include "keysinuse_ec.h"
 #endif // OPENSSL_NO_EC
 
-#include "logging.h"
+#include <openssl/conf.h>
 
 int init(ENGINE *e)
 {
@@ -56,6 +57,8 @@ int destroy(ENGINE *e)
 
 static int control(ENGINE *e, int cmd, long i, void *p, void (*func)(void))
 {
+    log_debug("Engine control (%d)", cmd);
+
     int ret = 0;
     switch (cmd)
     {
@@ -64,7 +67,7 @@ static int control(ENGINE *e, int cmd, long i, void *p, void (*func)(void))
         ret = 1;
         break;
     case ENGINE_CTRL_LOGGING_ID:
-        set_logging_id((char*)p);
+        set_logging_id((char *)p);
         ret = 1;
         break;
     default:
@@ -74,11 +77,67 @@ static int control(ENGINE *e, int cmd, long i, void *p, void (*func)(void))
     return ret;
 }
 
+
+static void  init_once()
+{
+    log_init();
+    // This will read the engine's config explicitly, so that the
+    // engine's config is still used when the engine is loaded
+    // programatically, and not included in the default config
+    // (e.g. on CBL-Mariner). This is also done early, so that
+    // the engine does not bind any functions anything if logging
+    // is disabled.
+    CONF *conf = NCONF_new(NULL);
+    conf = NCONF_new(NULL);
+    if (!NCONF_load(conf, keysinuse_conf_location, NULL))
+    {
+        log_error("Failed to load keysinuse config,OPENSSL_%ld", ERR_get_error());
+        goto err;
+    }
+
+    int success = 0;
+    long num_val = 0;
+    char *string_val = NULL;
+    for (int i = 0; i < (sizeof(supported_cmds) / sizeof(ENGINE_CMD_DEFN)) && supported_cmds[i].cmd_num != 0; i++)
+    {
+        if (supported_cmds[i].cmd_flags & ENGINE_CMD_FLAG_STRING)
+        {
+            string_val = NCONF_get_string(conf, keysinuse_conf_section, supported_cmds[i].cmd_name);
+            success = string_val != NULL;
+        }
+        else if (supported_cmds[i].cmd_flags & ENGINE_CMD_FLAG_NUMERIC)
+        {
+            success = NCONF_get_number(conf, keysinuse_conf_section, supported_cmds[i].cmd_name, &num_val);
+        }
+
+        if (success)
+        {
+            control(
+                NULL,
+                supported_cmds[i].cmd_num,
+                num_val,
+                string_val,
+                NULL);
+        }
+        else
+        {
+            unsigned long error = ERR_get_error();
+            if (ERR_GET_REASON(error) != CONF_R_NO_VALUE)
+            {
+                log_error("Failed to get config value for control %s,OPENSSL_%ld", supported_cmds[i].cmd_name, error);
+            }
+        }
+    }
+
+err:
+    NCONF_free(conf);
+}
+
 static int bind(ENGINE *e, const char *id)
 {
-    if (!CRYPTO_THREAD_run_once(&once, log_init))
+    if (!CRYPTO_THREAD_run_once(&once, init_once))
     {
-        // No point in using the keysinuse engine if it can't log
+        log_error("Error in one-time initialization,OPENSSL_%ld", ERR_get_error());
         return 0;
     }
 
@@ -92,6 +151,13 @@ static int bind(ENGINE *e, const char *id)
     {
         log_error("Error in engine bind,OPENSSL_%ld", ERR_get_error());
         return 0;
+    }
+
+    // No point in binding functions for passthrough if
+    // logging is disabled
+    if (global_logging_disabled())
+    {
+        return 1;
     }
 
 #ifndef OPENSSL_NO_RSA

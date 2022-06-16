@@ -18,6 +18,7 @@ BUILD_TMP=$(abspath ../../build-tmp/)
 FAKEROOT=$(BUILD_TMP)/fake-root
 DOCDIR=$(FAKEROOT)/usr/share/doc/$(PACKAGE)
 LIBDIR=$(FAKEROOT)/usr/lib/keysinuse
+BINDIR=$(FAKEROOT)/usr/bin
 
 UTIL=$(BLD_DIR)/keysinuseutil
 ENGINE=$(BLD_DIR)/keysinuse.so
@@ -53,8 +54,8 @@ install-clean:
 	sudo rm -rf $(FAKEROOT)
 
 $(FAKEROOT): install-clean $(UTIL)
-	mkdir -p $(LIBDIR) $(DOCDIR)
-	install -m 755 $(UTIL) $(LIBDIR)
+	mkdir -p $(LIBDIR) $(DOCDIR) $(BINDIR)
+	install -m 755 $(UTIL) $(BINDIR)
 	install -m 644 $(ENGINE) $(LIBDIR)
 	cp ../../LICENSE $(DOCDIR)/copyright
 	cat $(PKG_COMMON)/changelog | gzip -9 > $(DOCDIR)/changelog.Debian.gz

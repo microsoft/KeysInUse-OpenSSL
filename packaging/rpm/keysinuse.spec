@@ -6,8 +6,8 @@ Release:     LABEL
 Summary:     KeysInUse solution for OpenSSL
 
 Group:       Productivity/Security
-License:     Apache
-URL:         www.microsoft.com
+License:     MIT
+URL:         https://github.com/microsoft/KeysInUse-OpenSSL
 Source0:     %{name}-%{version}.tgz
 BuildRoot:   %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
@@ -34,8 +34,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
+%license /usr/share/licenses/keysinuse/LICENSE
 /usr/share/doc/keysinuse/ChangeLog
-/usr/lib/keysinuse/keysinuseutil
+/usr/bin/keysinuseutil
 /usr/lib/keysinuse/keysinuse.so
 
 %changelog

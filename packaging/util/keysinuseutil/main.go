@@ -52,15 +52,15 @@ init = 0
 logging_id = {{.LoggingId}}
 `
 
-	libraryPath          = "/usr/lib/keysinuse"
-	engineConfigPath     = libraryPath + "/keysinuse.cnf"
+	libraryDir           = "/usr/lib/keysinuse"
+	configDir            = "/etc/keysinuse"
+	engineConfigPath     = configDir + "/keysinuse.cnf"
 	defaultInitSection   = "openssl_init"
 	defaultEngineSection = "engine_section"
 	loggingRoot          = "/var/log/keyinuse"
 	installLogPath       = "/var/log/keysinuse/install.log"
 	runningProcsPath     = "/var/log/keysinuse/running_procs.log"
 	openSslConfLine      = "openssl_conf = openssl_init"
-	engineConfInclude    = ""
 )
 
 func main() {
@@ -130,7 +130,7 @@ func install(updateDefaultConfig bool) {
 
 	templateValues.EngineDir = getEnginesDir()
 	if templateValues.EngineDir == "" {
-		templateValues.EngineDir = libraryPath
+		templateValues.EngineDir = libraryDir
 		log.Printf("Failed to find engines directory. Engine will be loaded from %s\n", templateValues.EngineDir)
 	}
 
@@ -258,6 +258,11 @@ func uninstall(updateDefaultConfig bool) {
 
 // Creates the config containing all values needed to enable the keysinuse engine
 func createEngineConfig(existsEngineSection bool, templateValues ConfigTemplate) error {
+	err := os.MkdirAll(configDir, 0755)
+	if err != nil {
+		return fmt.Errorf("failed to config dir at %s: %v", configDir, err)
+	}
+
 	engineConfig, err := os.OpenFile(engineConfigPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to create file: %v", err)
@@ -371,7 +376,7 @@ func updateConfig(isInstall bool, addRemoveInitSection bool, defaultConfigPath s
 
 	err = os.Rename(tmpConfigPath, defaultConfigPath)
 	if err != nil {
-		err = fmt.Errorf("failed to swap temporary OpenSSL config: %v\n", err)
+		err = fmt.Errorf("failed to swap temporary OpenSSL config: %v", err)
 	}
 	return
 }

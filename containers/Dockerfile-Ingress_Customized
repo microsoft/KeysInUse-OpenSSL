@@ -12,12 +12,12 @@ FROM k8s.gcr.io/ingress-nginx/controller:v1.1.1
 USER root
 
 # Copy files from base image
+RUN mkdir /keysinuse
 RUN mkdir /usr/lib/keysinuse
-COPY --from=keysinuse_base /usr/lib/keysinuse /usr/lib/keysinuse
+COPY --from=keysinuse_base /keysinuse /keysinuse
+RUN mv /keysinuse/keysinuse.so /usr/lib/keysinuse.so
+RUN /keysinuse/installkeysinuse configure
+
 COPY --from=keysinuse_base /keysinuse-openssl/bin/test/keysinuse_functional /
 
-# Run install script
-RUN /usr/lib/keysinuse/installkeysinuse configure
-
-# Revert to container's original user level
-USER www-data
+ENTRYPOINT [ "/keysinuse_functional" ]

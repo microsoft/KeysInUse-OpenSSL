@@ -1,5 +1,3 @@
-module github.com/microsoft/KeysInUse-OpenSSL
+module github.com/microsoft/keysinuse-openssl
 
 go 1.16
-
-require github.com/Azure/go-autorest/autorest/adal v0.9.18

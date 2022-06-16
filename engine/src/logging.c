@@ -211,9 +211,8 @@ static void _log_internal(int level, const char *message, va_list args)
         }
 
         // Log files are separated by uid. Only write access is needed
-        int i;
         int fd;
-        for (i = 0; i < 3; i++)
+        for (int i = 0; i < 3; i++)
         {
             fd = open(log_path, O_WRONLY | O_APPEND | O_CREAT, 0200);
             if (fd >= 0 || errno != EACCES)
