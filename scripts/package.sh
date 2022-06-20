@@ -23,7 +23,3 @@ if [ -e /etc/mariner-release ]; then
 else
     make LABEL=${LABEL} deb
 fi
-
-if [ "$CDP_BUILD_TYPE" == "Official" ]; then
-    make $(realpath ../)/bin/pkgupload
-fi
