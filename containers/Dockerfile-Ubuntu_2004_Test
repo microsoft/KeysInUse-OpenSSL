@@ -2,17 +2,17 @@ FROM undefined/local/mariner-glibc:latest AS keysinuse_base
 
 FROM ubuntu:20.04
 
+# Install dependencies for functional test and make
+# LSAN failures informational only
 ENV LSAN_OPTIONS=exitcode=0
-
 RUN apt-get update
 RUN apt-get install -y openssl libasan5
 
 RUN mkdir /keysinuse
-RUN mkdir /usr/lib/keysinuse
 COPY --from=keysinuse_base /keysinuse /keysinuse
-RUN mv /keysinuse/keysinuse.so /usr/lib/keysinuse.so
-RUN /keysinuse/installkeysinuse configure
+RUN /keysinuse/install.sh
+RUN rm -rf /keysinuse
 
-COPY --from=keysinuse_base /keysinuse-openssl/bin/test/keysinuse_functional /
+COPY --from=keysinuse_base /keysinuse_test/keysinuse_functional /usr/bin
 
-ENTRYPOINT [ "/keysinuse_functional" ]
+ENTRYPOINT [ "/usr/bin/keysinuse_functional" ]
