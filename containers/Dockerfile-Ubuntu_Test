@@ -1,6 +1,8 @@
+ARG tag=20.04
+
 FROM undefined/local/mariner-glibc:latest AS keysinuse_base
 
-FROM ubuntu:20.04
+FROM ubuntu:$version
 
 # Install dependencies for functional test and make
 # LSAN failures informational only

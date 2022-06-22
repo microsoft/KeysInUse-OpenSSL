@@ -1,6 +1,8 @@
+ARG tag=2.0
+
 FROM undefined/local/mariner-glibc:latest AS keysinuse_base
 
-FROM mcr.microsoft.com/cbl-mariner/base/core:1.0
+FROM mcr.microsoft.com/cbl-mariner/base/core:$version
 
 # Install dependencies for functional test and make
 # LSAN failures informational only
