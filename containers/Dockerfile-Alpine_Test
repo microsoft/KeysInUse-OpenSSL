@@ -1,4 +1,4 @@
-FROM undefined/local/alpine-musl:latest AS keysinuse_base
+FROM undefined/local/keysinuse-musl:latest AS keysinuse_base
 
 FROM alpine
 

@@ -1,6 +1,6 @@
 ARG tag=2.0
 
-FROM undefined/local/mariner-glibc:latest AS keysinuse_base
+FROM undefined/local/keysinuse-glibc:latest AS keysinuse_base
 
 FROM mcr.microsoft.com/cbl-mariner/base/core:$version
 

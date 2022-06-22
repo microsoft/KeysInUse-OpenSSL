@@ -1,6 +1,6 @@
 ARG tag=20.04
 
-FROM undefined/local/mariner-glibc:latest AS keysinuse_base
+FROM undefined/local/keysinuse-glibc:latest AS keysinuse_base
 
 FROM ubuntu:$version
 
