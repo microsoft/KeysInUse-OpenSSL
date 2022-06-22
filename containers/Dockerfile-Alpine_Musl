@@ -24,10 +24,10 @@ RUN cmake --build ./build --target keysinuse_functional
 WORKDIR /keysinuse-openssl/packaging/util
 RUN make /keysinuse-openssl/bin/keysinuseutil
 
-# Copy files to staging
-RUN cp /keysinuse-openssl/bin/keysinuse.so               /keysinuse
-RUN cp /keysinuse-openssl/bin/keysinuseutil              /keysinuse
-RUN cp /keysinuse-openssl/bin/test/keysinuse_functional  /keysinuse_test
+FROM mcr.microsoft.com/cbl-mariner/distroless/minimal:2.0
 
-# Remove project files
-RUN rm -rf /keysinuse-openssl
+# Copy files to staging
+COPY --chmod=0755 ./containers/install.sh                       /keysinuse/install.sh
+COPY --from=0 /keysinuse-openssl/bin/keysinuse.so               /keysinuse/keysinuse.so
+COPY --from=0 /keysinuse-openssl/bin/keysinuseutil              /keysinuse/keysinuseutil
+COPY --from=0 /keysinuse-openssl/bin/test/keysinuse_functional  /keysinuse_test/keysinuse_functional
