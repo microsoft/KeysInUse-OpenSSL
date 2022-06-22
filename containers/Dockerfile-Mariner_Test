@@ -2,7 +2,7 @@ ARG tag=2.0
 
 FROM undefined/local/keysinuse-glibc:latest AS keysinuse_base
 
-FROM mcr.microsoft.com/cbl-mariner/base/core:$version
+FROM mcr.microsoft.com/cbl-mariner/base/core:$tag
 
 # Install dependencies for functional test and make
 # LSAN failures informational only

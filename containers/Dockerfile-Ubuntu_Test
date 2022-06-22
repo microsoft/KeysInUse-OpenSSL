@@ -2,7 +2,7 @@ ARG tag=20.04
 
 FROM undefined/local/keysinuse-glibc:latest AS keysinuse_base
 
-FROM ubuntu:$version
+FROM ubuntu:$tag
 
 # Install dependencies for functional test and make
 # LSAN failures informational only
