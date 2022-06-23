@@ -22,5 +22,4 @@ RUN rm -rf /keysinuse
 
 COPY --from=build /keysinuse-openssl/bin/test/keysinuse_functional /usr/bin
 
-
 ENTRYPOINT [ "/usr/bin/keysinuse_functional" ]
