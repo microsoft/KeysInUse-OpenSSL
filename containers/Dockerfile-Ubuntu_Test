@@ -1,7 +1,7 @@
 ARG TAG=20.04
 FROM undefined/local/keysinuse-glibc:latest AS keysinuse_base
 
-FROM ubuntu:$TAG
+FROM ubuntu:$TAG as build
 
 COPY ./ /keysinuse-openssl
 RUN apt-get update
@@ -22,7 +22,7 @@ COPY --from=keysinuse_base /keysinuse /keysinuse
 RUN /keysinuse/install.sh
 RUN rm -rf /keysinuse
 
-COPY --from=1 /keysinuse-openssl/bin/test/keysinuse_functional /usr/bin
-COPY --from=1 /usr/lib/x86_64-linux-gnu/libasan.so* /lib/
+COPY --from=build /keysinuse-openssl/bin/test/keysinuse_functional /usr/bin
+COPY --from=build /usr/lib/x86_64-linux-gnu/libasan.so* /lib/
 
 ENTRYPOINT [ "/usr/bin/keysinuse_functional" ]
