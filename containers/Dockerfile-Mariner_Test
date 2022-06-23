@@ -2,7 +2,7 @@ ARG TAG
 FROM undefined/local/keysinuse-glibc:latest AS keysinuse_base
 
 # Build the functional test for target platform
-FROM mcr.microsoft.com/cbl-mariner/base/core:$TAG
+FROM mcr.microsoft.com/cbl-mariner/base/core:$TAG as build
 RUN tdnf install -y build-essential openssl-devel cmake
 
 COPY ./ /keysinuse-openssl
@@ -20,7 +20,7 @@ COPY --from=keysinuse_base /keysinuse /keysinuse
 RUN /keysinuse/install.sh
 RUN rm -rf /keysinuse
 
-COPY --from=1 /keysinuse-openssl/bin/test/keysinuse_functional /usr/bin
-COPY --from=1 /lib/libasan.so* /lib/
+COPY --from=build /keysinuse-openssl/bin/test/keysinuse_functional /usr/bin
+COPY --from=build /lib/libasan.so* /lib/
 
 ENTRYPOINT [ "/usr/bin/keysinuse_functional" ]
