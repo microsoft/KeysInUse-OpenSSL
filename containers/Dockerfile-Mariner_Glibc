@@ -4,19 +4,12 @@ FROM mcr.microsoft.com/cbl-mariner/base/core:1.0
 RUN tdnf install -y build-essential openssl-devel cmake golang ca-certificates-microsoft
 
 # Copy project files
-RUN mkdir /keysinuse-openssl
-COPY ./cmake-toolchains/linux-amd64-glibc.cmake /keysinuse-openssl
-COPY ./CMakeLists.txt                           /keysinuse-openssl/CMakeLists.txt
-COPY ./engine                                   /keysinuse-openssl/engine
-COPY ./test                                     /keysinuse-openssl/test
-COPY ./packaging/util                           /keysinuse-openssl/packaging/util
+COPY ./ /keysinuse-openssl
 
 # Build C/CPP binaries
 WORKDIR /keysinuse-openssl
-RUN cmake -DCMAKE_TOOLCHAIN_FILE=./linux-amd64-glibc.cmake -H./ -B./build
+RUN cmake -DCMAKE_TOOLCHAIN_FILE=./cmake-toolchains/linux-amd64-glibc.cmake -H./ -B./build
 RUN cmake --build ./build --target keysinuse
-RUN cmake --build ./build --target keysinuse_test_common
-RUN cmake --build ./build --target keysinuse_functional
 
 # Build install helper
 WORKDIR /keysinuse-openssl/packaging/util
@@ -28,4 +21,3 @@ FROM mcr.microsoft.com/cbl-mariner/distroless/minimal:2.0
 COPY --chmod=0755 ./containers/install.sh                       /keysinuse/install.sh
 COPY --from=0 /keysinuse-openssl/bin/keysinuse.so               /keysinuse/keysinuse.so
 COPY --from=0 /keysinuse-openssl/bin/keysinuseutil              /keysinuse/keysinuseutil
-COPY --from=0 /keysinuse-openssl/bin/test/keysinuse_functional  /keysinuse_test/keysinuse_functional
