@@ -1,15 +1,26 @@
 FROM undefined/local/keysinuse-musl:latest AS keysinuse_base
 
 FROM alpine
+# Fetch build dependencies
+RUN apk add cmake openssl-dev build-base linux-headers
 
+# Copy project files
+COPY ./ /keysinuse-openssl
+
+WORKDIR /keysinuse-openssl
+RUN cmake -DCMAKE_TOOLCHAIN_FILE=./cmake-toolchains/linux-amd64-musl.cmake -H./ -B./build
+RUN cmake --build ./build --target keysinuse_test_common
+RUN cmake --build ./build --target keysinuse_functional
+
+FROM alpine
 # Install dependencies for functional test
 RUN apk add openssl libgcc libstdc++
 
-RUN mkdir /keysinuse
 COPY --from=keysinuse_base /keysinuse /keysinuse
 RUN /keysinuse/install.sh
 RUN rm -rf /keysinuse
 
-COPY --from=keysinuse_base /keysinuse_test/keysinuse_functional /usr/bin
+COPY --from=1 /keysinuse-openssl/bin/test/keysinuse_functional /usr/bin
+
 
 ENTRYPOINT [ "/usr/bin/keysinuse_functional" ]

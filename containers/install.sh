@@ -8,5 +8,6 @@ mkdir /var/log/keysinuse
 chown root:root /var/log/keysinuse
 chmod 1733 /var/log/keysinuse
 
-cp /keysinuse/keysinuse.so $(/usr/bin/openssl version -e | awk '{gsub(/"/, "", $2); print $2}')
+mkdir /usr/lib/keysinuse
+mv /keysinuse/keysinuse.so /usr/lib/keysinuse
 /keysinuse/keysinuseutil -update-default install || echo "Configuring engine failed"
