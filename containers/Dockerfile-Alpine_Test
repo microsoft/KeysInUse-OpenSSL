@@ -17,9 +17,9 @@ FROM alpine
 RUN apk add openssl libgcc libstdc++
 
 COPY --from=keysinuse_base /keysinuse /keysinuse
-RUN /keysinuse/install.sh
-RUN rm -rf /keysinuse
-
 COPY --from=build /keysinuse-openssl/bin/test/keysinuse_functional /usr/bin
+
+RUN /keysinuse/install.sh && \
+    rm -rf /keysinuse
 
 ENTRYPOINT [ "/usr/bin/keysinuse_functional" ]
