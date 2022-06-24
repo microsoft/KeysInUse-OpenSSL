@@ -15,12 +15,12 @@ RUN cmake --build ./build --target keysinuse_functional
 FROM mcr.microsoft.com/cbl-mariner/base/core:$TAG
 # Make LSAN failures informational only
 ENV LSAN_OPTIONS=exitcode=0
-RUN tdnf install -y build-essential
 
 COPY --from=keysinuse_base /keysinuse /keysinuse
-RUN /keysinuse/install.sh
-RUN rm -rf /keysinuse
-
 COPY --from=build /keysinuse-openssl/bin/test/keysinuse_functional /usr/bin
+
+RUN tdnf install -y build-essential && \
+    /keysinuse/install.sh && \
+    rm -rf /keysinuse
 
 ENTRYPOINT [ "/usr/bin/keysinuse_functional" ]

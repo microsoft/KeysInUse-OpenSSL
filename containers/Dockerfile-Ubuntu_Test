@@ -1,11 +1,12 @@
 ARG TAG=20.04
-FROM undefined/local/keysinuse-glibc:latest AS keysinuse_base
 
+FROM undefined/local/keysinuse-glibc:latest AS keysinuse_base
 FROM ubuntu:$TAG as build
 
 COPY ./ /keysinuse-openssl
-RUN apt-get update
-RUN apt-get install -y build-essential libssl-dev cmake
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \
+    apt-get install -y build-essential libssl-dev cmake
 
 WORKDIR /keysinuse-openssl
 RUN cmake -DCMAKE_TOOLCHAIN_FILE=./cmake-toolchains/linux-amd64-glibc.cmake -H./ -B./build
@@ -15,14 +16,15 @@ RUN cmake --build ./build --target keysinuse_functional
 FROM ubuntu:$TAG
 # LSAN failures informational only
 ENV LSAN_OPTIONS=exitcode=0
-RUN apt-get update
-RUN apt-get install -y openssl
+ENV DEBIAN_FRONTEND=noninteractive
 
-COPY --from=keysinuse_base /keysinuse /keysinuse
-RUN /keysinuse/install.sh
-RUN rm -rf /keysinuse
-
+COPY --from=keysinuse_base /keysinuse /keysinus
 COPY --from=build /keysinuse-openssl/bin/test/keysinuse_functional /usr/bin
 COPY --from=build /usr/lib/x86_64-linux-gnu/libasan.so* /lib/
+
+RUN apt-get update && \
+    apt-get install -y openssl && \
+    /keysinuse/install.sh && \
+    rm -rf /keysinuse
 
 ENTRYPOINT [ "/usr/bin/keysinuse_functional" ]
