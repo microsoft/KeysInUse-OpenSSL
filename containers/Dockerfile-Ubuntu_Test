@@ -18,7 +18,7 @@ FROM ubuntu:$TAG
 ENV LSAN_OPTIONS=exitcode=0
 ENV DEBIAN_FRONTEND=noninteractive
 
-COPY --from=keysinuse_base /keysinuse /keysinus
+COPY --from=keysinuse_base /keysinuse /keysinuse
 COPY --from=build /keysinuse-openssl/bin/test/keysinuse_functional /usr/bin
 COPY --from=build /usr/lib/x86_64-linux-gnu/libasan.so* /lib/
 
