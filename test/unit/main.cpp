@@ -265,7 +265,7 @@ bool TestLogging(int level)
             token = strtok(nullptr, "!");
             if (strcmp(token, levelStr.c_str()) != 0)
             {
-                return TestFail("Expected event to be logged with level \"%s\", found %s", levelStr, token);
+                return TestFail("Expected event to be logged with level \"%s\", found %s", levelStr.c_str(), token);
             }
 
             // Verify message body
