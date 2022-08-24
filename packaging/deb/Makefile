@@ -5,13 +5,12 @@ CONFIG?=amd64
 VER=$(VERSION)-$(LABEL)
 PKG_COMMON=../common
 PKG_DIR=../../pkg
+BLD_DIR=../../bin
 
-ifeq ($(CONFIG),aarch64)
+ifeq ($(CONFIG),arm64)
 ARCH=arm64
-BLD_DIR=../../bin/linux_arm64
 else
 ARCH=amd64
-BLD_DIR=../../bin
 endif
 
 BUILD_TMP=$(abspath ../../build-tmp/)

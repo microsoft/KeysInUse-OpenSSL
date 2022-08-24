@@ -3,15 +3,14 @@ include ../makeenv
 
 LABEL?=~dev
 CONFIG?=x86_64
+BLD_DIR=../../bin
 
-ifeq ($(CONFIG),aarch64)
+ifeq ($(CONFIG),arm64)
 ARCH=aarch64
 TARGET=aarch64-microsoft-linux
-BLD_DIR=../../bin/linux_arm64
 else
 ARCH=x86_64
 TARGET=x86_64-microsoft-linux
-BLD_DIR=../../bin
 endif
 
 PROJECT_ROOT=$(abspath ../../)
