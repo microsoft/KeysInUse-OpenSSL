@@ -1,6 +1,6 @@
-GOOS?=linux
-GOARCH?=amd64
 CC?=
+CONFIG?=amd64
+GOOS?=linux
 GOFLAGS_COMMON=-ldflags "-linkmode external"
 
 BLD_DIR=$(shell realpath ../../)/bin
@@ -9,6 +9,9 @@ KEYID=$(BLD_DIR)/keyid
 
 ifeq ($(CONFIG),aarch64)
 CC=aarch64-linux-gnu-gcc
+GOARCH?=arm64
+else
+GOARCH?=amd64
 endif
 
 all: $(KEYSINUSEUTIL) $(KEYID)

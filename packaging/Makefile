@@ -12,7 +12,7 @@ rpm: $(KEYSINUSEUTIL)
 	$(MAKE) -C rpm LABEL=$(LABEL) CONFIG=$(CONFIG)
 
 $(KEYSINUSEUTIL):
-	$(MAKE) -C util $(KEYSINUSEUTIL) GOARCH=$(CONFIG)
+	$(MAKE) -C util $(KEYSINUSEUTIL) CONFIG=$(CONFIG)
 clean:
 	$(MAKE) -C deb clean
 	$(MAKE) -C rpm clean
