@@ -18,8 +18,11 @@ fi
 go version
 cd packaging
 
+#amd64 or aarch64
+CONFIG=$1
+
 if [ -e /etc/mariner-release ]; then
-    make LABEL=${LABEL} rpm
+    make LABEL=${LABEL} CONFIG=${CONFIG} rpm
 else
-    make LABEL=${LABEL} deb
+    make LABEL=${LABEL} CONFIG=${CONFIG} deb
 fi

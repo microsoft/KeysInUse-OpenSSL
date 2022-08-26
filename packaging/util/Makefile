@@ -7,7 +7,7 @@ BLD_DIR=$(shell realpath ../../)/bin
 KEYSINUSEUTIL=$(BLD_DIR)/keysinuseutil
 KEYID=$(BLD_DIR)/keyid
 
-ifeq ($(CONFIG),arm64)
+ifeq ($(CONFIG),aarch64)
 CC=aarch64-linux-gnu-gcc
 endif
 

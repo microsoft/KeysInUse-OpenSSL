@@ -7,7 +7,7 @@ PKG_COMMON=../common
 PKG_DIR=../../pkg
 BLD_DIR=../../bin
 
-ifeq ($(CONFIG),arm64)
+ifeq ($(CONFIG),aarch64)
 ARCH=arm64
 else
 ARCH=amd64

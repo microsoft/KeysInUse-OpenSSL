@@ -5,7 +5,7 @@ LABEL?=~dev
 CONFIG?=x86_64
 BLD_DIR=../../bin
 
-ifeq ($(CONFIG),arm64)
+ifeq ($(CONFIG),aarch64)
 ARCH=aarch64
 TARGET=aarch64-microsoft-linux
 else
