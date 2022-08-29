@@ -17,10 +17,10 @@ endif
 all: $(KEYSINUSEUTIL) $(KEYID)
 
 $(KEYSINUSEUTIL):
-	CGO_ENABLED=1 GOOS=$(GOOS) GOARCH=$(GOARCH) CC=$(CC) go build $(GOFLAGS_COMMON) -o $(KEYSINUSEUTIL) ./keysinuseutil
+	CGO_ENABLED=1 CC=$(CC) GOOS=$(GOOS) GOARCH=$(GOARCH) go build $(GOFLAGS_COMMON) -o $(KEYSINUSEUTIL) ./keysinuseutil
 
 $(KEYID):
-	GOOS=$(GOOS) GOARCH=$(GOARCH) CC=$(CC) go build $(GOFLAGS_COMMON) -o $(KEYID) ./keyid
+	GOOS=$(GOOS) GOARCH=$(GOARCH) go build $(GOFLAGS_COMMON) -o $(KEYID) ./keyid
 clean:
 	sudo rm -f $(KEYSINUSEUTIL) $(KEYID)
 
