@@ -21,7 +21,7 @@ cd packaging
 #amd64 or aarch64
 CONFIG=$1
 
-if [ -e /etc/mariner-release ]; then
+if ([ -e /etc/mariner-release ] && [ "$2" != "deb" ]) || [ "$2" = "rpm" ]; then
     make LABEL=${LABEL} CONFIG=${CONFIG} rpm
 else
     make LABEL=${LABEL} CONFIG=${CONFIG} deb
