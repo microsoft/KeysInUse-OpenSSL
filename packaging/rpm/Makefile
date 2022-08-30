@@ -34,7 +34,7 @@ ENGINE=$(BLD_DIR)/keysinuse.so
 
 $(RPM): $(TARBALL)
 	mkdir -p $(PKG_DIR)
-	rpmbuild -v -bb --clean --define "_topdir $(BUILD_TMP)" $(BUILD_TMP)/SPECS/keysinuse.spec
+	rpmbuild -v -bb --target $(ARCH) --clean --define "_topdir $(BUILD_TMP)" $(BUILD_TMP)/SPECS/keysinuse.spec
 
 $(TARBALL): rpm_prepare install-deps $(DOCDIR)/ChangeLog $(LICENSEDIR)/LICENSE
 	find $(FAKEROOT) -type d | xargs chmod 0755
