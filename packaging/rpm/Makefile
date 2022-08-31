@@ -3,15 +3,14 @@ include ../makeenv
 
 LABEL?=~dev
 CONFIG?=x86_64
+BLD_DIR=../../bin
 
 ifeq ($(CONFIG),aarch64)
 ARCH=aarch64
 TARGET=aarch64-microsoft-linux
-BLD_DIR=../../bin/linux_arm64
 else
 ARCH=x86_64
 TARGET=x86_64-microsoft-linux
-BLD_DIR=../../bin
 endif
 
 PROJECT_ROOT=$(abspath ../../)
@@ -35,7 +34,7 @@ ENGINE=$(BLD_DIR)/keysinuse.so
 
 $(RPM): $(TARBALL)
 	mkdir -p $(PKG_DIR)
-	rpmbuild -v -bb --clean --define "_topdir $(BUILD_TMP)" $(BUILD_TMP)/SPECS/keysinuse.spec
+	rpmbuild -v -bb --target $(ARCH) --clean --define "_topdir $(BUILD_TMP)" $(BUILD_TMP)/SPECS/keysinuse.spec
 
 $(TARBALL): rpm_prepare install-deps $(DOCDIR)/ChangeLog $(LICENSEDIR)/LICENSE
 	find $(FAKEROOT) -type d | xargs chmod 0755

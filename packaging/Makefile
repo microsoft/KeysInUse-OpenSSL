@@ -1,5 +1,5 @@
 LABEL?=~dev
-CONFIG?=x86_64
+CONFIG?=amd64
 BLD_DIR=$(shell realpath ../)/bin
 
 KEYSINUSEUTIL=$(BLD_DIR)/keysinuseutil
@@ -12,7 +12,7 @@ rpm: $(KEYSINUSEUTIL)
 	$(MAKE) -C rpm LABEL=$(LABEL) CONFIG=$(CONFIG)
 
 $(KEYSINUSEUTIL):
-	$(MAKE) -C util $(KEYSINUSEUTIL)
+	$(MAKE) -C util $(KEYSINUSEUTIL) CONFIG=$(CONFIG)
 clean:
 	$(MAKE) -C deb clean
 	$(MAKE) -C rpm clean

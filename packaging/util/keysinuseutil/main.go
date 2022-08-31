@@ -1,7 +1,7 @@
 package main
 
 /*
-#cgo LDFLAGS: -L/usr/include/openssl -lcrypto
+#cgo amd64 LDFLAGS: -L/usr/include/openssl -lcrypto
 #include <openssl/conf.h>
 #include <openssl/crypto.h>
 #include <openssl/err.h>

@@ -103,6 +103,8 @@ int keysinuse_destroy_pkey_methods()
 {
     keysinuse_pkey_rsa_meth = NULL;
     keysinuse_pkey_rsa_pss_meth = NULL;
+
+    return 1;
 }
 
 static int on_rsa_evp_key_used(PFN_PKEY_RSA_sign passthrough_rsa_sign, EVP_PKEY_CTX *ctx,
