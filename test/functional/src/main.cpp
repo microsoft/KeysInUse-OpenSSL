@@ -18,7 +18,7 @@ int main(int argc, char **argv)
 
     // Call OPENSSL_init_crypto to force config file load
     RunTest("== Setup ==", [&]()
-            {
+    {
         unsigned long init_opts = OPENSSL_INIT_ENGINE_DYNAMIC;
 
         if (argc < 2)
@@ -94,25 +94,21 @@ int main(int argc, char **argv)
         sprintf(logLocation, LOG_PATH_TMPL, "not", geteuid(), logging_id);
         remove(logLocation);
 
-        return true; });
+        return true;
+    });
 
     // RSA APIs
     {
         bool isConfigured;
         RsaTests rsaTests(logLocation);
-        RunTest("== RSA Configuration ==", [&rsaTests, &isConfigured]()
-                { return (isConfigured = rsaTests.IsConfigured()); });
+        RunTest("== RSA Configuration ==", [&rsaTests, &isConfigured](){return (isConfigured = rsaTests.IsConfigured());});
 
         if (isConfigured)
         {
-            RunTest("== RSA private encrypt ==", [&rsaTests]()
-                    { return rsaTests.PrivateEncrypt(); });
-            RunTest("== RSA private decrypt ==", [&rsaTests]()
-                    { return rsaTests.PrivateDecrypt(); });
-            RunTest("== RSA sign/verify ==", [&rsaTests]()
-                    { return rsaTests.SignVerify(); });
-            RunTest("== RSA events throttled ==", [&rsaTests]()
-                    { return rsaTests.EventThrottling(); });
+            RunTest("== RSA private encrypt ==",  [&rsaTests](){return rsaTests.PrivateEncrypt();});
+            RunTest("== RSA private decrypt ==",  [&rsaTests](){return rsaTests.PrivateDecrypt();});
+            RunTest("== RSA sign/verify ==",      [&rsaTests](){return rsaTests.SignVerify();});
+            RunTest("== RSA events throttled ==", [&rsaTests](){return rsaTests.EventThrottling();});
         }
     }
 
@@ -120,15 +116,12 @@ int main(int argc, char **argv)
     {
         bool isConfigured;
         EcTests ecTests(logLocation);
-        RunTest("== EC Configuration ==", [&ecTests, &isConfigured]()
-                { return (isConfigured = ecTests.IsConfigured()); });
+        RunTest("== EC Configuration ==", [&ecTests, &isConfigured](){return (isConfigured = ecTests.IsConfigured());});
 
         if (isConfigured)
         {
-            RunTest("== EC sign/verify ==", [&ecTests]()
-                    { return ecTests.SignVerify(); });
-            RunTest("== EC events throttled ==", [&ecTests]()
-                    { return ecTests.EventThrottling(); });
+            RunTest("== EC sign/verify ==",      [&ecTests](){return ecTests.SignVerify();});
+            RunTest("== EC events throttled ==", [&ecTests](){return ecTests.EventThrottling();});
         }
     }
 
@@ -136,20 +129,15 @@ int main(int argc, char **argv)
     {
         bool isConfigured;
         EvpTests evpTests(logLocation);
-        RunTest("== EVP Configuration ==", [&evpTests, &isConfigured]()
-                { return (isConfigured = evpTests.IsConfigured()); });
+        RunTest("== EVP Configuration ==", [&evpTests, &isConfigured](){return (isConfigured = evpTests.IsConfigured());});
 
         // Only run the tests if EVP is configured as expected
         if (isConfigured)
         {
-            RunTest("== EVP sign/verify ==", [&evpTests]()
-                    { return evpTests.RSA_SignVerify(); });
-            RunTest("== EVP sign/verify PSS ==", [&evpTests]()
-                    { return evpTests.RSA_PSS_SignVerify(); });
-            RunTest("== EVP encrypt/decrypt ==", [&evpTests]()
-                    { return evpTests.RSA_EncryptDecrypt(); });
-            RunTest("== EVP events throttled ==", [&evpTests]()
-                    { return evpTests.EventThrottling(); });
+            RunTest("== EVP sign/verify ==",      [&evpTests](){return evpTests.RSA_SignVerify();});
+            RunTest("== EVP sign/verify PSS ==",  [&evpTests](){return evpTests.RSA_PSS_SignVerify();});
+            RunTest("== EVP encrypt/decrypt ==",  [&evpTests](){return evpTests.RSA_EncryptDecrypt();});
+            RunTest("== EVP events throttled ==", [&evpTests](){return evpTests.EventThrottling();});
         }
     }
     TestFinish();

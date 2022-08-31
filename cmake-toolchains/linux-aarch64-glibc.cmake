@@ -2,7 +2,7 @@ set(CMAKE_SYSTEM_NAME Linux)
 
 # Set CMake variables that subsequent CMake scripts can check against
 set(CMAKE_SYSTEM_NAME Linux)
-set(CMAKE_SYSTEM_PROCESSOR ARM64)
+set(CMAKE_SYSTEM_PROCESSOR aarch64)
 
 set(TARGET_TRIPLE aarch64-linux-gnu)
 
