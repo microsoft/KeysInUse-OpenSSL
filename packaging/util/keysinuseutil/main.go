@@ -32,6 +32,7 @@ type ConfigTemplate struct {
 	InitSection   string
 	EngineSection string
 	EngineDir     string
+	EngineName    string
 	LoggingId     string
 }
 
@@ -57,7 +58,7 @@ keysinuse = keysinuse_section
 
 [ keysinuse_section ]
 engine_id = keysinuse
-dynamic_path = {{.EngineDir}}/{{$engineName}}
+dynamic_path = {{.EngineDir}}/{{.EngineName}}
 default_algorithms = RSA,EC
 init = 0
 logging_id = {{.LoggingId}}
@@ -115,6 +116,7 @@ func install(updateDefaultConfig bool) {
 	templateValues := ConfigTemplate{
 		InitSection:   defaultInitSection,
 		EngineSection: defaultEngineSection,
+		EngineName:    engineName,
 	}
 
 	loggingId := make([]byte, 16)
@@ -134,10 +136,10 @@ func install(updateDefaultConfig bool) {
 		templateValues.EngineDir = libraryDir
 		log.Printf("Failed to find engines directory. Engine will be loaded from %s\n", templateValues.EngineDir)
 	} else {
-	 	err = os.Symlink(libraryDir + "/" + engineName, templateValues.EngineDir + "/" + engineName)
-	 	if err != nil {
-	 		log.Fatalf("Failed to create symlink to engine library: %s", err)
-	 	}
+		err = os.Symlink(libraryDir+"/"+engineName, templateValues.EngineDir+"/"+engineName)
+		if err != nil {
+			log.Fatalf("Failed to create symlink to engine library: %s", err)
+		}
 	}
 
 	conf, err := loadOpenSslConfig(defaultConfigPath)
