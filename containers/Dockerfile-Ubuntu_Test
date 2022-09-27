@@ -1,25 +1,29 @@
-ARG TAG
-FROM undefined/local/keysinuse-glibc:latest AS keysinuse_base
+ARG TAG=20.04
 
-# Build the functional test for target platform
-FROM mcr.microsoft.com/cbl-mariner/base/core:$TAG as build
-RUN tdnf install -y build-essential openssl-devel cmake
+FROM undefined/local/keysinuse-glibc:latest AS keysinuse_base
+FROM ubuntu:$TAG as build
 
 COPY ./ /keysinuse-openssl
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \
+    apt-get install -y build-essential libssl-dev cmake
 
 WORKDIR /keysinuse-openssl
 RUN cmake -DCMAKE_TOOLCHAIN_FILE=./cmake-toolchains/linux-amd64-glibc.cmake -H./ -B./build
 RUN cmake --build ./build --target keysinuse_test_common
 RUN cmake --build ./build --target keysinuse_functional
 
-FROM mcr.microsoft.com/cbl-mariner/base/core:$TAG
-# Make LSAN failures informational only
+FROM ubuntu:$TAG
+# LSAN failures informational only
 ENV LSAN_OPTIONS=exitcode=0
+ENV DEBIAN_FRONTEND=noninteractive
 
 COPY --from=keysinuse_base /keysinuse /keysinuse
 COPY --from=build /keysinuse-openssl/bin/test/keysinuse_functional /usr/bin
+COPY --from=build /usr/lib/x86_64-linux-gnu/libasan.so* /lib/
 
-RUN tdnf install -y build-essential && \
+RUN apt-get update && \
+    apt-get install -y openssl && \
     /keysinuse/install.sh && \
     rm -rf /keysinuse
 
