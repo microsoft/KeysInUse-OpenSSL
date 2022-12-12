@@ -1,6 +1,6 @@
 FROM undefined/local/keysinuse-musl:latest AS keysinuse_base
 
-FROM alpine as build
+FROM alpine:3.16 as build
 # Fetch build dependencies
 RUN apk add cmake openssl-dev build-base linux-headers
 
@@ -12,7 +12,7 @@ RUN cmake -DCMAKE_TOOLCHAIN_FILE=./cmake-toolchains/linux-amd64-musl.cmake -H./ 
 RUN cmake --build ./build --target keysinuse_test_common
 RUN cmake --build ./build --target keysinuse_functional
 
-FROM alpine
+FROM alpine:3.16
 # Install dependencies for functional test
 RUN apk add openssl libgcc libstdc++
 
