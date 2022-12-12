@@ -120,9 +120,8 @@ func install(updateDefaultConfig bool) {
 	}
 
 	loggingId := make([]byte, 16)
-	_, err = rand.Read(loggingId)
-	if err != nil {
-		log.Printf("Failed to generate unique logging Id: %v", err)
+	if _, err = rand.Read(loggingId); err != nil {
+		log.Printf("Failed to generate unique logging Id: %v\n", err)
 	} else {
 		templateValues.LoggingId = hex.EncodeToString(loggingId)
 	}
@@ -135,11 +134,8 @@ func install(updateDefaultConfig bool) {
 	if templateValues.EngineDir == "" {
 		templateValues.EngineDir = libraryDir
 		log.Printf("Failed to find engines directory. Engine will be loaded from %s\n", templateValues.EngineDir)
-	} else {
-		err = os.Symlink(libraryDir+"/"+engineName, templateValues.EngineDir+"/"+engineName)
-		if err != nil {
-			log.Fatalf("Failed to create symlink to engine library: %s", err)
-		}
+	} else if err = os.Symlink(libraryDir+"/"+engineName, templateValues.EngineDir+"/"+engineName); err != nil {
+		log.Fatalf("Failed to create symlink to engine library: %s", err)
 	}
 
 	conf, err := loadOpenSslConfig(defaultConfigPath)
@@ -180,8 +176,7 @@ func install(updateDefaultConfig bool) {
 	}
 
 	// Generate the config specific to this engine
-	err = createEngineConfig(existsEngineSection, templateValues)
-	if err != nil {
+	if err = createEngineConfig(existsEngineSection, templateValues); err != nil {
 		log.Fatalf("Failed to create engine config file: %v\n", err)
 	}
 
@@ -194,8 +189,7 @@ func install(updateDefaultConfig bool) {
 	if !existsKeysinuseEngine && updateDefaultConfig {
 		// Write changes to a temporary file, including our custom config
 		// Only add the init section if it doesn't exist yet
-		err = updateConfig(true, addInitSection, defaultConfigPath)
-		if err != nil {
+		if err = updateConfig(true, addInitSection, defaultConfigPath); err != nil {
 			log.Fatalf("Failed to update OpenSSL config: %v\n", err)
 		}
 	}
@@ -212,8 +206,7 @@ func install(updateDefaultConfig bool) {
 	}()
 
 	for procPath := range runningProcs {
-		_, err := runningProcsFile.WriteString(procPath + "\n")
-		if err != nil {
+		if _, err := runningProcsFile.WriteString(procPath + "\n"); err != nil {
 			log.Printf("Failed to write processes to running process log: %v\n", err)
 			break
 		}
@@ -252,8 +245,7 @@ func uninstall(updateDefaultConfig bool) {
 				}
 			}
 
-			err = updateConfig(false, removeInitSection, defaultConfigPath)
-			if err != nil {
+			if err = updateConfig(false, removeInitSection, defaultConfigPath); err != nil {
 				log.Fatalf("Failed to update OpenSSL config: %v\n", err)
 			}
 
@@ -261,13 +253,20 @@ func uninstall(updateDefaultConfig bool) {
 	}
 
 	// Remove generated engine config
-	os.Remove(engineConfigPath)
+	if err := os.Remove(engineConfigPath); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
+
+	// Remove symlink to engine\
+	engineSymlink := getEnginesDir() + "/" + engineName
+	if err := os.Remove(engineSymlink); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+	}
 }
 
 // Creates the config containing all values needed to enable the keysinuse engine
 func createEngineConfig(existsEngineSection bool, templateValues ConfigTemplate) error {
-	err := os.MkdirAll(configDir, 0755)
-	if err != nil {
+	if err := os.MkdirAll(configDir, 0755); err != nil {
 		return fmt.Errorf("failed to config dir at %s: %v", configDir, err)
 	}
 
@@ -282,8 +281,7 @@ func createEngineConfig(existsEngineSection bool, templateValues ConfigTemplate)
 		if err != nil {
 			return fmt.Errorf("failed to generate template of init section in engine config: %v", err)
 		}
-		err = tmpl.Execute(engineConfig, templateValues)
-		if err != nil {
+		if err = tmpl.Execute(engineConfig, templateValues); err != nil {
 			return fmt.Errorf("failed to populate init section of engine config: %v", err)
 		}
 	}
@@ -292,8 +290,7 @@ func createEngineConfig(existsEngineSection bool, templateValues ConfigTemplate)
 	if err != nil {
 		return fmt.Errorf("failed to generate template of engine config: %v", err)
 	}
-	err = tmpl.Execute(engineConfig, templateValues)
-	if err != nil {
+	if err = tmpl.Execute(engineConfig, templateValues); err != nil {
 		return fmt.Errorf("failed to populate engine config: %v", err)
 	}
 	return nil
@@ -366,8 +363,7 @@ func updateConfig(isInstall bool, addRemoveInitSection bool, defaultConfigPath s
 			}
 		}
 
-		_, err = tmpConfig.WriteString(line + "\n")
-		if err != nil {
+		if _, err = tmpConfig.WriteString(line + "\n"); err != nil {
 			err = fmt.Errorf("failed to copy line %d from original config: %v", lineNum, err)
 			return
 		}
@@ -382,8 +378,7 @@ func updateConfig(isInstall bool, addRemoveInitSection bool, defaultConfigPath s
 		tmpConfig.WriteString(".include " + engineConfigPath + "\n\n")
 	}
 
-	err = os.Rename(tmpConfigPath, defaultConfigPath)
-	if err != nil {
+	if err = os.Rename(tmpConfigPath, defaultConfigPath); err != nil {
 		err = fmt.Errorf("failed to swap temporary OpenSSL config: %v", err)
 	}
 	return
@@ -393,8 +388,7 @@ func updateConfig(isInstall bool, addRemoveInitSection bool, defaultConfigPath s
 // We use a map as a simple way to avoid duplicates
 func getProcsWithOpenSsl() (matchedProcs map[string]struct{}, err error) {
 	matchedProcs = make(map[string]struct{})
-	procDirs, err := ioutil.ReadDir("/proc")
-	if err == nil {
+	if procDirs, err := ioutil.ReadDir("/proc"); err == nil {
 		for _, procDir := range procDirs {
 			// Filter to process directories (organized by numeric PID)
 			if procDir.IsDir() && regexp.MustCompile(`\d+`).MatchString(procDir.Name()) {
@@ -464,6 +458,7 @@ func getEnginesDir() string {
 	engineDir = strings.TrimSpace(engineDir)
 	engineDir = strings.TrimPrefix(engineDir, "ENGINESDIR: \"")
 	engineDir = strings.TrimSuffix(engineDir, "\"")
+
 	return resolveSymLink(engineDir)
 }
 
