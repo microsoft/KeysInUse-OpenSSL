@@ -7,13 +7,17 @@
 const int failMsgMax = 256;
 static int exitCode = 0;
 
-void RunTest(const char* stage, std::function<bool()> testFunc)
+bool RunTest(const char* stage, std::function<bool()> testFunc)
 {
     std::cout << stage << std::endl;
-    if (testFunc())
+
+    bool passed = testFunc();
+    if (passed)
     {
         TestPass();
     }
+
+    return passed;
 }
 
 void TestPass()

@@ -29,7 +29,8 @@ public:
         Cleanup();
     }
 
-    bool IsConfigured();
+    static bool IsConfigured();
+    bool Setup();
     bool RSA_EncryptDecrypt();
     bool RSA_SignVerify();
     bool RSA_PSS_SignVerify();

@@ -11,6 +11,12 @@
 
 using namespace std;
 
+void RsaTests::Cleanup()
+{
+    BIO_reset(rsaBio.get());
+    remove(m_logLocation);
+}
+
 bool RsaTests::IsConfigured()
 {
     shared_ptr<ENGINE> eng(
@@ -28,6 +34,11 @@ bool RsaTests::IsConfigured()
         return TestFail("keysinuse engine not loaded for RSA operations, found [ %s ]", loaded_id);
     }
 
+    return true;
+}
+
+bool RsaTests::Setup()
+{
     if (rsaBio == nullptr)
     {
         return TestFailOpenSSLError("Failed to create new in-mem BIO for EC key");
@@ -38,12 +49,6 @@ bool RsaTests::IsConfigured()
     }
 
     return true;
-}
-
-void RsaTests::Cleanup()
-{
-    BIO_reset(rsaBio.get());
-    remove(m_logLocation);
 }
 
 bool RsaTests::PrivateEncrypt()

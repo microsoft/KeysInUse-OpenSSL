@@ -22,7 +22,9 @@ public:
     {
         Cleanup();
     }
-    bool IsConfigured();
+
+    static bool IsConfigured();
+    bool Setup();
     bool SignVerify();
     bool EventThrottling();
 };

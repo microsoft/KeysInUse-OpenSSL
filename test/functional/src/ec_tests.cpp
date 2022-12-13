@@ -12,6 +12,12 @@
 
 using namespace std;
 
+void EcTests::Cleanup()
+{
+    BIO_reset(ecBio.get());
+    remove(m_logLocation);
+}
+
 bool EcTests::IsConfigured()
 {
     shared_ptr<ENGINE> eng(
@@ -29,6 +35,11 @@ bool EcTests::IsConfigured()
         return TestFail("keysinuse engine not loaded for EC operations, found [ %s ]", loaded_id);
     }
 
+    return true;
+}
+
+bool EcTests::Setup()
+{
     if (ecBio == nullptr)
     {
         return TestFailOpenSSLError("Failed to create new in-mem BIO for EC key");
@@ -41,11 +52,6 @@ bool EcTests::IsConfigured()
     return true;
 }
 
-void EcTests::Cleanup()
-{
-    BIO_reset(ecBio.get());
-    remove(m_logLocation);
-}
 
 bool EcTests::SignVerify()
 {

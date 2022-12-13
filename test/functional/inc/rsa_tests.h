@@ -22,7 +22,8 @@ public:
     {
         Cleanup();
     }
-    bool IsConfigured();
+    static bool IsConfigured();
+    bool Setup();
     bool PrivateEncrypt();
     bool PrivateDecrypt();
     bool SignVerify();
