@@ -2,7 +2,7 @@
 
 #include <functional>
 
-void RunTest(const char* stage, std::function<bool()> testFunc);
+bool RunTest(const char* stage, std::function<bool()> testFunc);
 void TestPass();
 bool TestFail(const char* reason, ...);
 bool TestFailOpenSSLError(const char* reason);

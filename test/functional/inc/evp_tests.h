@@ -17,19 +17,14 @@ private:
     void Cleanup();
 
 public:
-    EvpTests(const char *logLocation) : functional_test(logLocation),
-                                        rsaBio(
-                                            BIO_new_mem_buf((void *)rsa_keypair, -1),
-                                            BIO_free),
-                                        rsaPssBio(
-                                            BIO_new_mem_buf((void *)rsa_pss_keypair, -1),
-                                            BIO_free) {}
+    EvpTests(const char *logLocation) : functional_test(logLocation) {}
     ~EvpTests()
     {
         Cleanup();
     }
 
-    bool IsConfigured();
+    static bool IsConfigured();
+    bool Setup();
     bool RSA_EncryptDecrypt();
     bool RSA_SignVerify();
     bool RSA_PSS_SignVerify();

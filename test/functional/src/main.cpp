@@ -14,6 +14,10 @@ const char *logging_id = "functionaltest";
 
 int main(int argc, char **argv)
 {
+    bool isRsaConfigured = false;
+    bool isEcConfigured  = false;
+    bool isEvpConfigured = false;
+
     char logLocation[LOG_PATH_LEN + 1];
 
     // Call OPENSSL_init_crypto to force config file load
@@ -76,6 +80,15 @@ int main(int argc, char **argv)
             cout << "\33[33mLoaded engine [" << ENGINE_get_id(dynamicEngine.get()) << "] dynamically. Default configuration not tested" << endl;
         }
 
+        return true;
+    });
+
+    RunTest("== RSA Configuration ==", [&isRsaConfigured](){return (isRsaConfigured = RsaTests::IsConfigured());});
+    RunTest("== EC Configuration ==",  [&isEcConfigured](){return (isEcConfigured = EcTests::IsConfigured());});
+    RunTest("== EVP Configuration ==", [&isEvpConfigured](){return (isEvpConfigured = EvpTests::IsConfigured());});
+
+    RunTest("== Engine Control == ", [&] () {
+        // Set logging ID for tests
         shared_ptr<ENGINE> keysinuseEngine(
             ENGINE_by_id(engine_id),
             ENGINE_free);
@@ -98,46 +111,42 @@ int main(int argc, char **argv)
     });
 
     // RSA APIs
+    if (isRsaConfigured)
     {
-        bool isConfigured;
         RsaTests rsaTests(logLocation);
-        RunTest("== RSA Configuration ==", [&rsaTests, &isConfigured](){return (isConfigured = rsaTests.IsConfigured());});
 
-        if (isConfigured)
+        if (RunTest("== RSA setup ==",            std::bind(&RsaTests::Setup, &rsaTests)));
         {
-            RunTest("== RSA private encrypt ==",  [&rsaTests](){return rsaTests.PrivateEncrypt();});
-            RunTest("== RSA private decrypt ==",  [&rsaTests](){return rsaTests.PrivateDecrypt();});
-            RunTest("== RSA sign/verify ==",      [&rsaTests](){return rsaTests.SignVerify();});
-            RunTest("== RSA events throttled ==", [&rsaTests](){return rsaTests.EventThrottling();});
+            RunTest("== RSA private encrypt ==",  std::bind(&RsaTests::PrivateEncrypt, &rsaTests));
+            RunTest("== RSA private decrypt ==",  std::bind(&RsaTests::PrivateDecrypt, &rsaTests));
+            RunTest("== RSA sign/verify ==",      std::bind(&RsaTests::SignVerify, &rsaTests));
+            RunTest("== RSA events throttled ==", std::bind(&RsaTests::EventThrottling, &rsaTests));
         }
     }
 
     // EC_KEY APIs
-    {
-        bool isConfigured;
+    if (isEcConfigured)
+{
         EcTests ecTests(logLocation);
-        RunTest("== EC Configuration ==", [&ecTests, &isConfigured](){return (isConfigured = ecTests.IsConfigured());});
 
-        if (isConfigured)
+        if (RunTest("== EC setup ==",            std::bind(&EcTests::Setup, &ecTests)))
         {
-            RunTest("== EC sign/verify ==",      [&ecTests](){return ecTests.SignVerify();});
-            RunTest("== EC events throttled ==", [&ecTests](){return ecTests.EventThrottling();});
+            RunTest("== EC sign/verify ==",      std::bind(&EcTests::SignVerify, &ecTests));
+            RunTest("== EC events throttled ==", std::bind(&EcTests::EventThrottling, &ecTests));
         }
     }
 
     // EVP APIs (RSA and RSA PSS supported)
+    if (isEvpConfigured)
     {
-        bool isConfigured;
         EvpTests evpTests(logLocation);
-        RunTest("== EVP Configuration ==", [&evpTests, &isConfigured](){return (isConfigured = evpTests.IsConfigured());});
 
-        // Only run the tests if EVP is configured as expected
-        if (isConfigured)
+        if (RunTest("== EVP setup ==",            std::bind(&EvpTests::Setup, &evpTests)));
         {
-            RunTest("== EVP sign/verify ==",      [&evpTests](){return evpTests.RSA_SignVerify();});
-            RunTest("== EVP sign/verify PSS ==",  [&evpTests](){return evpTests.RSA_PSS_SignVerify();});
-            RunTest("== EVP encrypt/decrypt ==",  [&evpTests](){return evpTests.RSA_EncryptDecrypt();});
-            RunTest("== EVP events throttled ==", [&evpTests](){return evpTests.EventThrottling();});
+            RunTest("== EVP sign/verify ==",      std::bind(&EvpTests::RSA_SignVerify, &evpTests));
+            RunTest("== EVP sign/verify PSS ==",  std::bind(&EvpTests::RSA_PSS_SignVerify, &evpTests));
+            RunTest("== EVP encrypt/decrypt ==",  std::bind(&EvpTests::RSA_EncryptDecrypt, &evpTests));
+            RunTest("== EVP events throttled ==", std::bind(&EvpTests::EventThrottling, &evpTests));
         }
     }
     TestFinish();

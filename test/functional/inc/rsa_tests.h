@@ -14,15 +14,13 @@ private:
     void Cleanup();
 
 public:
-    RsaTests(const char *logLocation) : functional_test(logLocation),
-                                        rsaBio(
-                                            BIO_new_mem_buf((void *)rsa_keypair, -1),
-                                            BIO_free) {}
+    RsaTests(const char *logLocation) : functional_test(logLocation) {}
     ~RsaTests()
     {
         Cleanup();
     }
-    bool IsConfigured();
+    static bool IsConfigured();
+    bool Setup();
     bool PrivateEncrypt();
     bool PrivateDecrypt();
     bool SignVerify();

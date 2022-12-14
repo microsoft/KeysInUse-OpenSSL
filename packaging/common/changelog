@@ -1,3 +1,8 @@
+keysinuse (0.3.2) stable; urgency=low
+  * Fix bug related to symlinks in package install
+
+ -- Maxwell Moyer-McKee <mamckee@microsoft.com>  Tue, 13 Dec 2022 12:00:00 +0800
+
 keysinuse (0.3.1) stable; urgency=low
   * Read engine config from engine bind function
   * Moved helper binaries and config files to more appropriate location than /usr/lib

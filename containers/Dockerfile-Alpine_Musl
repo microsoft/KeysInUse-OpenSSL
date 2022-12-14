@@ -1,4 +1,4 @@
-FROM alpine as build
+FROM alpine:3.16 as build
 
 # Fetch build dependencies
 RUN apk add cmake openssl-dev build-base linux-headers go

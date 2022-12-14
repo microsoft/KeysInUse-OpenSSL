@@ -11,9 +11,18 @@
 
 using namespace std;
 
+void EvpTests::Cleanup()
+{
+    BIO_reset(rsaBio.get());
+    BIO_reset(rsaPssBio.get());
+    remove(m_logLocation);
+}
+
 bool EvpTests::IsConfigured()
 {
     // Don't return until we've checked both RSA and RSA PSS engines
+    // If no engine is set, we expect the calls to pass through from
+    // the default implementation
     bool correctEngine = true;
     const char *loaded_id;
     shared_ptr<ENGINE> eng(
@@ -42,30 +51,31 @@ bool EvpTests::IsConfigured()
         }
     }
 
-    if (correctEngine)
-    {
-        if (rsaBio == nullptr)
-        {
-            return TestFailOpenSSLError("Failed to create new in-mem BIO for RSA key");
-        }
-        if (rsaPssBio == nullptr)
-        {
-            return TestFailOpenSSLError("Failed to create new in-mem BIO for RSA PSS key");
-        }
-        if (!RAND_bytes(m_plaintext, m_plaintextLen))
-        {
-            return TestFailOpenSSLError("Failed to generate random bytes");
-        }
-    }
-
     return correctEngine;
 }
 
-void EvpTests::Cleanup()
+bool EvpTests::Setup()
 {
-    BIO_reset(rsaBio.get());
-    BIO_reset(rsaPssBio.get());
-    remove(m_logLocation);
+    rsaBio.reset(
+        BIO_new_mem_buf((void *)rsa_keypair, -1),
+        BIO_free);
+    rsaPssBio.reset(
+        BIO_new_mem_buf((void *)rsa_pss_keypair, -1),
+        BIO_free);
+    if (rsaBio == nullptr)
+    {
+        return TestFailOpenSSLError("Failed to create new in-mem BIO for RSA key");
+    }
+    if (rsaPssBio == nullptr)
+    {
+        return TestFailOpenSSLError("Failed to create new in-mem BIO for RSA PSS key");
+    }
+    if (!RAND_bytes(m_plaintext, m_plaintextLen))
+    {
+        return TestFailOpenSSLError("Failed to generate random bytes");
+    }
+
+    return true;
 }
 
 bool EvpTests::RSA_EncryptDecrypt()

@@ -2,7 +2,6 @@
 #include "test.h"
 #include "util.h"
 
-
 #include "keysinuse_engine.h"
 
 #include <openssl/ec.h>
@@ -11,6 +10,12 @@
 #include <openssl/rand.h>
 
 using namespace std;
+
+void EcTests::Cleanup()
+{
+    BIO_reset(ecBio.get());
+    remove(m_logLocation);
+}
 
 bool EcTests::IsConfigured()
 {
@@ -23,12 +28,20 @@ bool EcTests::IsConfigured()
         return TestFail("Default OpenSSL implementation loaded for EC");
     }
 
-    const char* loaded_id = ENGINE_get_id(eng.get());
+    const char *loaded_id = ENGINE_get_id(eng.get());
     if (strcmp(engine_id, loaded_id))
     {
         return TestFail("keysinuse engine not loaded for EC operations, found [ %s ]", loaded_id);
     }
 
+    return true;
+}
+
+bool EcTests::Setup()
+{
+    ecBio.reset(
+        BIO_new_mem_buf((void *)ec_keypair, -1),
+        BIO_free);
     if (ecBio == nullptr)
     {
         return TestFailOpenSSLError("Failed to create new in-mem BIO for EC key");
@@ -39,12 +52,6 @@ bool EcTests::IsConfigured()
     }
 
     return true;
-}
-
-void EcTests::Cleanup()
-{
-    BIO_reset(ecBio.get());
-    remove(m_logLocation);
 }
 
 bool EcTests::SignVerify()
@@ -127,7 +134,7 @@ bool EcTests::EventThrottling()
         return TestFailOpenSSLError("Failed to sign data a second time with EC private key");
     }
 
-    if(!CheckLog(m_logLocation, ec_keyid, 1, 0, 1))
+    if (!CheckLog(m_logLocation, ec_keyid, 1, 0, 1))
     {
         return false;
     }
