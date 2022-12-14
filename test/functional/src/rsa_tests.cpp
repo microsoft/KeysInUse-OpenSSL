@@ -39,6 +39,9 @@ bool RsaTests::IsConfigured()
 
 bool RsaTests::Setup()
 {
+    rsaBio.reset(
+        BIO_new_mem_buf((void *)rsa_keypair, -1),
+        BIO_free);
     if (rsaBio == nullptr)
     {
         return TestFailOpenSSLError("Failed to create new in-mem BIO for EC key");

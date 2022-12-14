@@ -115,12 +115,12 @@ int main(int argc, char **argv)
     {
         RsaTests rsaTests(logLocation);
 
-        if (RunTest("== RSA setup ==",            [&rsaTests](){return rsaTests.Setup();}))
+        if (RunTest("== RSA setup ==",            std::bind(&RsaTests::Setup, &rsaTests)));
         {
-            RunTest("== RSA private encrypt ==",  [&rsaTests](){return rsaTests.PrivateEncrypt();});
-            RunTest("== RSA private decrypt ==",  [&rsaTests](){return rsaTests.PrivateDecrypt();});
-            RunTest("== RSA sign/verify ==",      [&rsaTests](){return rsaTests.SignVerify();});
-            RunTest("== RSA events throttled ==", [&rsaTests](){return rsaTests.EventThrottling();});
+            RunTest("== RSA private encrypt ==",  std::bind(&RsaTests::PrivateEncrypt, &rsaTests));
+            RunTest("== RSA private decrypt ==",  std::bind(&RsaTests::PrivateDecrypt, &rsaTests));
+            RunTest("== RSA sign/verify ==",      std::bind(&RsaTests::SignVerify, &rsaTests));
+            RunTest("== RSA events throttled ==", std::bind(&RsaTests::EventThrottling, &rsaTests));
         }
     }
 
@@ -129,10 +129,10 @@ int main(int argc, char **argv)
 {
         EcTests ecTests(logLocation);
 
-        if (RunTest("== EC setup ==",            [&ecTests](){return ecTests.Setup();}))
+        if (RunTest("== EC setup ==",            std::bind(&EcTests::Setup, &ecTests)))
         {
-            RunTest("== EC sign/verify ==",      [&ecTests](){return ecTests.SignVerify();});
-            RunTest("== EC events throttled ==", [&ecTests](){return ecTests.EventThrottling();});
+            RunTest("== EC sign/verify ==",      std::bind(&EcTests::SignVerify, &ecTests));
+            RunTest("== EC events throttled ==", std::bind(&EcTests::EventThrottling, &ecTests));
         }
     }
 
@@ -141,12 +141,12 @@ int main(int argc, char **argv)
     {
         EvpTests evpTests(logLocation);
 
-        if (RunTest("== EVP setup ==",            [&evpTests](){return evpTests.Setup();}))
+        if (RunTest("== EVP setup ==",            std::bind(&EvpTests::Setup, &evpTests)));
         {
-            RunTest("== EVP sign/verify ==",      [&evpTests](){return evpTests.RSA_SignVerify();});
-            RunTest("== EVP sign/verify PSS ==",  [&evpTests](){return evpTests.RSA_PSS_SignVerify();});
-            RunTest("== EVP encrypt/decrypt ==",  [&evpTests](){return evpTests.RSA_EncryptDecrypt();});
-            RunTest("== EVP events throttled ==", [&evpTests](){return evpTests.EventThrottling();});
+            RunTest("== EVP sign/verify ==",      std::bind(&EvpTests::RSA_SignVerify, &evpTests));
+            RunTest("== EVP sign/verify PSS ==",  std::bind(&EvpTests::RSA_PSS_SignVerify, &evpTests));
+            RunTest("== EVP encrypt/decrypt ==",  std::bind(&EvpTests::RSA_EncryptDecrypt, &evpTests));
+            RunTest("== EVP events throttled ==", std::bind(&EvpTests::EventThrottling, &evpTests));
         }
     }
     TestFinish();

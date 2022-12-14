@@ -17,13 +17,7 @@ private:
     void Cleanup();
 
 public:
-    EvpTests(const char *logLocation) : functional_test(logLocation),
-                                        rsaBio(
-                                            BIO_new_mem_buf((void *)rsa_keypair, -1),
-                                            BIO_free),
-                                        rsaPssBio(
-                                            BIO_new_mem_buf((void *)rsa_pss_keypair, -1),
-                                            BIO_free) {}
+    EvpTests(const char *logLocation) : functional_test(logLocation) {}
     ~EvpTests()
     {
         Cleanup();

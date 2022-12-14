@@ -14,10 +14,7 @@ private:
     void Cleanup();
 
 public:
-    EcTests(const char *logLocation) : functional_test(logLocation),
-                                       ecBio(
-                                           BIO_new_mem_buf((void *)ec_keypair, -1),
-                                           BIO_free) {}
+    EcTests(const char *logLocation) : functional_test(logLocation) {}
     ~EcTests()
     {
         Cleanup();
