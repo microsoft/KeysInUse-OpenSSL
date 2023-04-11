@@ -126,7 +126,7 @@ int get_RSA_keysinuse_info(RSA* rsa, keysinuse_info **info)
     }
 
     *info = RSA_get_ex_data(rsa, rsa_keysinuse_info_index);
-    if (info == NULL)
+    if (*info == NULL)
     {
         log_error("Failed to retrieve keysinuse info from key,OPENSSL_%ld",ERR_get_error());
         return 0;
@@ -134,7 +134,6 @@ int get_RSA_keysinuse_info(RSA* rsa, keysinuse_info **info)
 
     return 1;
 }
-
 
 void on_rsa_key_used(RSA *rsa, unsigned int usage)
 {

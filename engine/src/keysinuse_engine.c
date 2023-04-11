@@ -77,10 +77,8 @@ static int control(ENGINE *e, int cmd, long i, void *p, void (*func)(void))
     return ret;
 }
 
-
-static void  init_once()
+static void config_init()
 {
-    log_init();
     // This will read the engine's config explicitly, so that the
     // engine's config is still used when the engine is loaded
     // programatically, and not included in the default config
@@ -88,7 +86,6 @@ static void  init_once()
     // the engine does not bind any functions anything if logging
     // is disabled.
     CONF *conf = NCONF_new(NULL);
-    conf = NCONF_new(NULL);
     if (!NCONF_load(conf, keysinuse_conf_location, NULL))
     {
         log_error("Failed to load keysinuse config,OPENSSL_%ld", ERR_get_error());
@@ -133,11 +130,28 @@ err:
     NCONF_free(conf);
 }
 
-static int bind(ENGINE *e, const char *id)
+OPENSSL_EXPORT
+int bind_engine(ENGINE *e, const char *id, const dynamic_fns *fns)
 {
-    if (!CRYPTO_THREAD_run_once(&once, init_once))
+    if (!CRYPTO_THREAD_run_once(&log_once, log_init))
     {
-        log_error("Error in one-time initialization,OPENSSL_%ld", ERR_get_error());
+        log_error("Error in one-time logging initialization,OPENSSL_%ld", ERR_get_error());
+        return 0;
+    }
+
+    // Return value of ENGINE_get_static_state should match in the
+    // dynamically loaded case. The Keys-In-Use engine will not work
+    // with statically linked applications, since it must transparently
+    // pass through and make upcalls to libcrypto.
+    if (ENGINE_get_static_state() != fns->static_state)
+    {
+        log_error("Statically linked application,PID_%d", getpid());
+        return 0;
+    }
+
+    if (!CRYPTO_THREAD_run_once(&config_once, config_init))
+    {
+        log_error("Error in one-time config initialization,OPENSSL_%ld", ERR_get_error());
         return 0;
     }
 
@@ -223,4 +237,3 @@ static int bind(ENGINE *e, const char *id)
 }
 
 IMPLEMENT_DYNAMIC_CHECK_FN()
-IMPLEMENT_DYNAMIC_BIND_FN(bind)
