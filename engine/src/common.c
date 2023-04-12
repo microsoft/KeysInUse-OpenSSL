@@ -18,7 +18,7 @@ void set_logging_backoff(long new_backoff)
 // Set logging backoff to something negative to disable logging
 int global_logging_disabled()
 {
-    return logging_backoff <= 0;
+    return logging_backoff < 0;
 }
 
 keysinuse_info *new_keysinuse_info()
