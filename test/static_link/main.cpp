@@ -3,6 +3,7 @@
 #include "keysinuse_engine.h"
 
 #include <cstring>
+#include <string>
 #include <memory>
 #include <dlfcn.h>
 #include <openssl/conf.h>
