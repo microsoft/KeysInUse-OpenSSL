@@ -11,7 +11,8 @@ static const char *engine_id = "keysinuse";
 static const char *engine_name = "An engine for logging public key identifiers";
 static const char *keysinuse_conf_location = "/etc/keysinuse/keysinuse.cnf";
 static const char *keysinuse_conf_section = "keysinuse_section";
-static CRYPTO_ONCE once = CRYPTO_ONCE_STATIC_INIT;
+static CRYPTO_ONCE log_once = CRYPTO_ONCE_STATIC_INIT;
+static CRYPTO_ONCE config_once = CRYPTO_ONCE_STATIC_INIT;
 
 static const ENGINE_CMD_DEFN supported_cmds[] =
 {
