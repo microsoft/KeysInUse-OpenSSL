@@ -1,3 +1,8 @@
+keysinuse (0.3.3) stable; urgency=medium
+  * KeysInUse engine will no longer load for statically linked applications.
+
+ -- Maxwell Moyer-McKee <mamckee@microsoft.com>  Fri, 14 Apr 2022 12:00:00 +0800
+
 keysinuse (0.3.2) stable; urgency=low
   * Fix bug related to symlinks in package install
 
