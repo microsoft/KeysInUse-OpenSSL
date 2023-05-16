@@ -43,7 +43,7 @@ If the engine won't load at all, or OpenSSL continues crashing on config load, e
     - Debian: `dpkg -r keysinuse`
     - RPM: `rpm -e keysinuse`
 2. Use the keysinuse util to disable the engine without uninstalling  
-    - `/usr/bin/keysinuseutil -update-default uninstall`
+    - `/usr/bin/keysinuseutil -update-default -install-library uninstall`
 3. Disable the engine from the config manually  
     a) Open the OpenSSL config  
     b) Comment out/delete the line including the keysinuse config file

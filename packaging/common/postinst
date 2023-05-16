@@ -22,7 +22,7 @@ case $1 in
   # Configure OpenSSL to use the engine
   if [ -x /usr/bin/keysinuseutil ]; then
     echo "Enabling keysinuse engine for OpenSSL"
-    /usr/bin/keysinuseutil -update-default install || echo "Configuring engine failed"
+    /usr/bin/keysinuseutil -update-default -install-library install || echo "Configuring engine failed"
   fi
 esac
 

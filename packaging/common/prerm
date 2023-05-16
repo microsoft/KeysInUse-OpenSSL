@@ -5,7 +5,7 @@ case $1 in
   # Deconfigure engine
   if [ -x /usr/bin/keysinuseutil ]; then
     echo "Disabling keysinuse engine for OpenSSL"
-    /usr/bin/keysinuseutil -update-default uninstall || echo "Deconfiguring keysinuse engine failed"
+    /usr/bin/keysinuseutil -update-default -install-library uninstall || echo "Deconfiguring keysinuse engine failed"
   fi
 
   # Clean up symlink to engine in engines directory

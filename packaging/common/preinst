@@ -5,7 +5,7 @@ case $1 in
   # Check if the engine is already configured. Deconfigure first if so
   if [ -x /usr/bin/keysinuseutil ]; then
     echo "Disabling version $2 of keysinuse engine for OpenSSL"
-    /usr/bin/keysinuseutil -update-default uninstall || echo "Failed to deconfigure old version"
+    /usr/bin/keysinuseutil -update-default -install-library uninstall || echo "Failed to deconfigure old version"
   fi
 esac
 
