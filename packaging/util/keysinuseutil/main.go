@@ -271,7 +271,6 @@ func uninstall(updateDefaultConfig bool, installEngineLibrary bool) {
 
 	if installEngineLibrary {
 		// Remove symlink to engine
-
 		engineSymlink := getEnginesDir() + "/" + engineName
 		if err := os.Remove(engineSymlink); err != nil {
 			fmt.Fprintln(os.Stderr, err)
