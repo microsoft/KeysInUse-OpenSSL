@@ -10,4 +10,4 @@ chmod 1733 /var/log/keysinuse
 
 mkdir /usr/lib/keysinuse
 mv /keysinuse/keysinuse.so /usr/lib/keysinuse
-/keysinuse/keysinuseutil -update-default install || echo "Configuring engine failed"
+/keysinuse/keysinuseutil -update-default -install-library install || echo "Configuring engine failed"

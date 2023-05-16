@@ -48,11 +48,16 @@ const (
 	runningProcsPath     = "/var/log/keysinuse/running_procs.log"
 	openSslConfLine      = "openssl_conf = openssl_init"
 
+	// Only added if the engines section is not present
 	templateInitSection = `[ {{.InitSection}} ]
 engines = {{.EngineSection}}
 
 `
 
+	// Minimum config required to load the engine by config.
+	// If 'update-default' is not used, then the engine can be
+	// enabled manually by using the '.include' directive on the
+	// generated config file.
 	templateEngineConfig = `[ {{.EngineSection}} ]
 keysinuse = keysinuse_section
 
@@ -74,22 +79,24 @@ func main() {
 	}
 
 	var updateDefaultConfig bool
+	var installEngineLibrary bool
 	flag.BoolVar(&updateDefaultConfig, "update-default", false, "Set to update the default OpenSSL config to include the keysinuse config")
+	flag.BoolVar(&installEngineLibrary, "install-library", false, "Set to install the engine library to the default engines directory")
 
 	flag.Parse()
 
 	switch flag.Arg(0) {
 	case "install":
-		install(updateDefaultConfig)
+		install(updateDefaultConfig, installEngineLibrary)
 	case "uninstall":
-		uninstall(updateDefaultConfig)
+		uninstall(updateDefaultConfig, installEngineLibrary)
 	default:
 		printUsage("Unkown command: " + flag.Arg(0))
 		os.Exit(1)
 	}
 }
 
-func install(updateDefaultConfig bool) {
+func install(updateDefaultConfig bool, installEngineLibrary bool) {
 	installLog, err := os.OpenFile(installLogPath, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0200)
 	if err != nil {
 		log.SetOutput(os.Stderr)
@@ -105,18 +112,14 @@ func install(updateDefaultConfig bool) {
 	// Double check that we're on 1.1.1
 	ver := getOpenSSLVersion()
 	if ver != "1.1.1" {
-		log.Printf("Unsupported version of OpenSSL %s\n", ver)
-	}
-
-	defaultConfigPath := getDefaultConfigPath()
-	if defaultConfigPath == "" {
-		log.Fatalf("Failed to find OpenSSL config. Could not locate OPENSSL_DIR\n")
+		log.Fatalf("Unsupported version of OpenSSL %s\n", ver)
 	}
 
 	templateValues := ConfigTemplate{
 		InitSection:   defaultInitSection,
 		EngineSection: defaultEngineSection,
 		EngineName:    engineName,
+		EngineDir:     libraryDir,
 	}
 
 	loggingId := make([]byte, 16)
@@ -130,49 +133,58 @@ func install(updateDefaultConfig bool) {
 	existsEngineSection := false
 	existsKeysinuseEngine := false
 
-	templateValues.EngineDir = getEnginesDir()
-	if templateValues.EngineDir == "" {
-		templateValues.EngineDir = libraryDir
-		log.Printf("Failed to find engines directory. Engine will be loaded from %s\n", templateValues.EngineDir)
-	} else if err = os.Symlink(libraryDir+"/"+engineName, templateValues.EngineDir+"/"+engineName); err != nil {
-		log.Fatalf("Failed to create symlink to engine library: %s", err)
+	if installEngineLibrary {
+		if enginesDir := getEnginesDir(); enginesDir != "" {
+			if err = os.Symlink(libraryDir+"/"+engineName, enginesDir+"/"+engineName); err != nil {
+				log.Printf("Failed to create symlink to engine library: %s", err)
+			}
+			templateValues.EngineDir = getEnginesDir()
+		} else {
+			log.Printf("Failed to find engines directory. Engine will be loaded from %s\n", templateValues.EngineDir)
+		}
 	}
 
-	conf, err := loadOpenSslConfig(defaultConfigPath)
-	if err != nil {
-		log.Fatalf("Failed to load default config: %s", err)
-	}
-	defer C.CONF_free(conf)
+	defaultConfigPath := getDefaultConfigPath()
+	if defaultConfigPath != "" {
+		conf, err := loadOpenSslConfig(defaultConfigPath)
+		if err == nil {
+			defer C.CONF_free(conf)
 
-	// Check if main configuration section exists yet
-	if val := getConfigValue(conf, "", "openssl_conf"); val != "" {
-		templateValues.InitSection = val
-		addInitSection = false
-	}
+			// Check if main configuration section exists yet
+			if val := getConfigValue(conf, "", "openssl_conf"); val != "" {
+				templateValues.InitSection = val
+				addInitSection = false
+			}
 
-	// Check for existing engines
-	if val := getConfigValue(conf, templateValues.InitSection, "engines"); val != "" {
-		templateValues.EngineSection = val
-		existsEngineSection = true
+			// Check for existing engines
+			if val := getConfigValue(conf, templateValues.InitSection, "engines"); val != "" {
+				templateValues.EngineSection = val
+				existsEngineSection = true
 
-		// Engine section might exist but be empty.
-		installedEngines := getConfigValuesInSection(conf, templateValues.EngineSection)
+				// Engine section might exist but be empty.
+				installedEngines := getConfigValuesInSection(conf, templateValues.EngineSection)
 
-		if len(installedEngines) > 0 {
-			for _, engineSectionName := range installedEngines {
-				installedEngine := getConfigValue(conf, engineSectionName, "engine_id")
-				if installedEngine == "keysinuse" { // ID before open sourcing
-					existsKeysinuseEngine = true
-				} else {
-					log.Fatalf("Engine [%s] already installed\n", installedEngine)
+				if len(installedEngines) > 0 {
+					for _, engineSectionName := range installedEngines {
+						installedEngine := getConfigValue(conf, engineSectionName, "engine_id")
+						if installedEngine == "keysinuse" { // ID before open sourcing
+							existsKeysinuseEngine = true
+						} else {
+							log.Fatalf("Engine [%s] already installed\n", installedEngine)
+						}
+					}
+
+					// Bail if another engine other than keysinuse is installed
+					if !existsKeysinuseEngine || len(installedEngines) > 1 {
+						os.Exit(1)
+					}
 				}
 			}
-
-			// Bail if another engine other than keysinuse is installed
-			if !existsKeysinuseEngine || len(installedEngines) > 1 {
-				os.Exit(1)
-			}
+		} else {
+			log.Printf("Failed to load default config: %s", err)
 		}
+	} else {
+		log.Printf("Failed to find OpenSSL config. Could not locate OPENSSL_DIR\n")
 	}
 
 	// Generate the config specific to this engine
@@ -213,7 +225,7 @@ func install(updateDefaultConfig bool) {
 	}
 }
 
-func uninstall(updateDefaultConfig bool) {
+func uninstall(updateDefaultConfig bool, installEngineLibrary bool) {
 	if updateDefaultConfig {
 		// Deconfigure engine
 		defaultConfigPath := getDefaultConfigPath()
@@ -257,10 +269,12 @@ func uninstall(updateDefaultConfig bool) {
 		fmt.Fprintln(os.Stderr, err)
 	}
 
-	// Remove symlink to engine\
-	engineSymlink := getEnginesDir() + "/" + engineName
-	if err := os.Remove(engineSymlink); err != nil {
-		fmt.Fprintln(os.Stderr, err)
+	if installEngineLibrary {
+		// Remove symlink to engine
+		engineSymlink := getEnginesDir() + "/" + engineName
+		if err := os.Remove(engineSymlink); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+		}
 	}
 }
 
