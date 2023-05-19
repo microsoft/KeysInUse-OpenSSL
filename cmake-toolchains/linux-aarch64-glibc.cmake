@@ -2,8 +2,6 @@
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR aarch64)
 
-set(TARGET_TRIPLE aarch64-linux-gnu)
-
 # Point clang sysroot to cross compilation toolchain when cross compiling
 if(NOT CMAKE_HOST_SYSTEM_PROCESSOR MATCHES ARM64|aarch64)
     message(STATUS "Using cross compilation toolchain")
