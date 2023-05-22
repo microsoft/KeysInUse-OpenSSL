@@ -8,7 +8,11 @@ KEYSINUSEUTIL=$(BLD_DIR)/keysinuseutil
 KEYID=$(BLD_DIR)/keyid
 
 ifeq ($(CONFIG),aarch64)
+# Cross-compiling
+ifneq ($(shell uname -p),aarch64)
 CC=aarch64-linux-gnu-gcc
+endif
+
 GOARCH?=arm64
 else
 GOARCH?=amd64
