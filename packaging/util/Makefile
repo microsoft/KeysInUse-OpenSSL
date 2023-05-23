@@ -8,7 +8,11 @@ KEYSINUSEUTIL=$(BLD_DIR)/keysinuseutil
 KEYID=$(BLD_DIR)/keyid
 
 ifeq ($(CONFIG),aarch64)
+# Cross-compiling
+ifneq ($(shell uname -p),aarch64)
 CC=aarch64-linux-gnu-gcc
+endif
+
 GOARCH?=arm64
 else
 GOARCH?=amd64
@@ -17,7 +21,7 @@ endif
 all: $(KEYSINUSEUTIL) $(KEYID)
 
 $(KEYSINUSEUTIL):
-	CGO_ENABLED=1 CC=$(CC) GOOS=$(GOOS) GOARCH=$(GOARCH) go build $(GOFLAGS_COMMON) -o $(KEYSINUSEUTIL) ./keysinuseutil
+	CGO_ENABLED=1 CGO_LDFLAGS='-lcrypto' CC=$(CC) GOOS=$(GOOS) GOARCH=$(GOARCH) go build $(GOFLAGS_COMMON) -o $(KEYSINUSEUTIL) ./keysinuseutil
 
 $(KEYID):
 	GOOS=$(GOOS) GOARCH=$(GOARCH) go build $(GOFLAGS_COMMON) -o $(KEYID) ./keyid
