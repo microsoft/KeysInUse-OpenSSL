@@ -52,7 +52,6 @@ static void ec_index_free_key(void *parent, void *ptr, CRYPTO_EX_DATA *ad,
     keysinuse_info *info = (keysinuse_info *)ptr;
 
     if (!global_logging_disabled() &&
-        info != NULL &&
         (info->encrypts > 0 || info->decrypts > 0))
     {
         if (info->key_identifier[0] == '\0' &&
@@ -67,11 +66,16 @@ static void ec_index_free_key(void *parent, void *ptr, CRYPTO_EX_DATA *ad,
                    info->decrypts,
                    info->first_use,
                    time(NULL));
+    }
 
+    if (info != NULL)
+    {
         CRYPTO_THREAD_lock_free(info->lock);
         OPENSSL_free(info);
-        EC_KEY_set_ex_data(eckey, ec_keysinuse_info_index, NULL);
     }
+
+    EC_KEY_set_ex_data(eckey, ec_keysinuse_info_index, NULL);
+    ec_keysinuse_info_index = -1;
 }
 
 static void on_ec_key_used(EC_KEY *eckey, unsigned int usage)
