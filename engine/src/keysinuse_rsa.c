@@ -45,27 +45,25 @@ static void rsa_index_free_key(void *parent, void *ptr, CRYPTO_EX_DATA *ad,
     RSA *rsa = (RSA *)parent;
     keysinuse_info *info = (keysinuse_info *)ptr;
 
-    if (!global_logging_disabled() &&
-        info != NULL &&
-        (info->encrypts > 0 || info->decrypts > 0))
+    if (info != NULL)
     {
-        if (info->key_identifier[0] == '\0' &&
-            !get_rsa_key_identifier(rsa, info))
+        if (!global_logging_disabled() &&
+            (info->encrypts > 0 || info->decrypts > 0) &&
+            (info->key_identifier[0] != '\0' || get_rsa_key_identifier(rsa, info)))
         {
-            return;
+            log_notice("%s,%d,%d,%ld,%ld",
+                    info->key_identifier,
+                    info->encrypts,
+                    info->decrypts,
+                    info->first_use,
+                    time(NULL));
         }
-
-        log_notice("%s,%d,%d,%ld,%ld",
-                   info->key_identifier,
-                   info->encrypts,
-                   info->decrypts,
-                   info->first_use,
-                   time(NULL));
 
         CRYPTO_THREAD_lock_free(info->lock);
         OPENSSL_free(info);
-        RSA_set_ex_data(rsa, rsa_keysinuse_info_index, NULL);
     }
+
+    RSA_set_ex_data(rsa, rsa_keysinuse_info_index, NULL);
 }
 
 static int get_rsa_key_identifier(RSA *rsa, keysinuse_info *info)
