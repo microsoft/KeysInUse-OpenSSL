@@ -54,14 +54,9 @@ static void ec_index_free_key(void *parent, void *ptr, CRYPTO_EX_DATA *ad,
     if (info != NULL)
     {
         if (!global_logging_disabled() &&
-            (info->encrypts > 0 || info->decrypts > 0))
+            (info->encrypts > 0 || info->decrypts > 0) ||
+            (info->key_identifier[0] != '\0' || get_ec_key_identifier(eckey, info)))
         {
-            if (info->key_identifier[0] == '\0' &&
-                !get_ec_key_identifier(eckey, info))
-            {
-                return;
-            }
-
             log_notice("%s,%d,%d,%ld,%ld",
                     info->key_identifier,
                     info->encrypts,
