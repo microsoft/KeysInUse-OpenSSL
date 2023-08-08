@@ -14,6 +14,7 @@
 #include <openssl/crypto.h>
 
 static const char *default_log_id = "default";
+static const size_t log_id_len_max = 16;
 
 static char *log_id;
 static char *iden;
@@ -27,6 +28,8 @@ static long max_file_size = __LONG_MAX__;
 
 void set_logging_id(char *id)
 {
+    size_t id_len;
+
     // Reset log_id
     if (log_id != NULL &&
         log_id != (char *)default_log_id)
@@ -35,14 +38,20 @@ void set_logging_id(char *id)
     }
     log_id = NULL;
 
+    // Allocate new log_id capped at 16 bytes
     if (id != NULL && *id != '\0')
     {
-        log_id = OPENSSL_malloc(strlen(id) + 1);
+        id_len = strlen(id);
+        id_len = id_len > log_id_len_max ? log_id_len_max : id_len;
+        log_id = OPENSSL_malloc(id_len + 1);
     }
 
     if (log_id != NULL)
     {
-        strcpy(log_id, id);
+        strncpy(log_id, id, id_len);
+        // Ensure log_id is null terminated. If id is longer
+        // than id_len then stdncpy will not null terminate log_id
+        log_id[id_len] = '\0';
     }
     else
     {
