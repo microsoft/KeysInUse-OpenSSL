@@ -13,14 +13,15 @@
 #include <string.h>
 #include <openssl/crypto.h>
 
-static const char *default_log_id = "default";
-static const size_t log_id_len_max = 16;
+#define LOG_ID_LEN_MAX 16
+// unix time + , + executable path
+#define ID_LEN_MAX 21 + PATH_MAX
 
-static char *log_id;
+static const char *default_log_id = "default";
+static const char *default_iden = "";
+static char log_id[LOG_ID_LEN_MAX+1] = {0};
 static char *iden;
 static int iden_len;
-static unsigned int ref_count = 0;
-static CRYPTO_RWLOCK *ref_count_lock;
 
 // Max file size in bytes. Currently not set but
 // may be added as a parameter later if needed
@@ -28,34 +29,17 @@ static long max_file_size = __LONG_MAX__;
 
 void set_logging_id(char *id)
 {
-    size_t id_len;
-
-    // Reset log_id
-    if (log_id != NULL &&
-        log_id != (char *)default_log_id)
-    {
-        OPENSSL_free(log_id);
-    }
-    log_id = NULL;
-
-    // Allocate new log_id capped at 16 bytes
+    // Restrict log id length
     if (id != NULL && *id != '\0')
     {
-        id_len = strlen(id);
-        id_len = id_len > log_id_len_max ? log_id_len_max : id_len;
-        log_id = OPENSSL_malloc(id_len + 1);
-    }
-
-    if (log_id != NULL)
-    {
-        strncpy(log_id, id, id_len);
+        strncpy(log_id, id, LOG_ID_LEN_MAX);
         // Ensure log_id is null terminated. If id is longer
         // than id_len then stdncpy will not null terminate log_id
-        log_id[id_len] = '\0';
+        log_id[LOG_ID_LEN_MAX] = '\0';
     }
     else
     {
-        log_id = (char *)default_log_id;
+        strcpy(log_id, default_log_id);
     }
 }
 
@@ -87,18 +71,29 @@ void log_init()
     if (exe_path)
     {
         iden_len = snprintf(NULL, 0, "%ld,%s", start_time, exe_path);
+        iden_len = iden_len > ID_LEN_MAX ? ID_LEN_MAX : iden_len;
+
         iden = OPENSSL_malloc(iden_len + 1);
 
         // If sprintf fails, we can still log key usage. This should never
         // happen, but we don't want to cause any crashes in case it does.
-        if (sprintf(iden, "%ld,%s", start_time, exe_path) < 0)
+        if (snprintf(iden, iden_len, "%ld,%s", start_time, exe_path) < 0)
         {
             OPENSSL_free(iden);
-            iden = "";
+            iden = (char*)default_iden;
         }
     }
 
     OPENSSL_free(exe_path);
+}
+
+void log_cleanup()
+{
+    if (iden != default_iden)
+    {
+        OPENSSL_free(iden);
+        iden = (char *)default_iden;
+    }
 }
 
 void log_debug(const char *message, ...)
