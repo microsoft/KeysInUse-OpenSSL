@@ -63,11 +63,17 @@ static void rsa_index_free_key(void *parent, void *ptr, CRYPTO_EX_DATA *ad,
         OPENSSL_free(info);
     }
 
-    RSA_set_ex_data(rsa, rsa_keysinuse_info_index, NULL);
+    if (rsa != NULL)
+    {
+        RSA_set_ex_data(rsa, rsa_keysinuse_info_index, NULL);
+    }
 }
 
 static int get_rsa_key_identifier(RSA *rsa, keysinuse_info *info)
 {
+    if (rsa == NULL)
+        return 0;
+
     int ret = 1;
     unsigned char *key_buf = NULL,
                   *key_buf_start = NULL;
