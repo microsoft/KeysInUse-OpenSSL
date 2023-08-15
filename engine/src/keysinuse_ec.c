@@ -54,7 +54,7 @@ static void ec_index_free_key(void *parent, void *ptr, CRYPTO_EX_DATA *ad,
     if (info != NULL)
     {
         if (!global_logging_disabled() &&
-            (info->encrypts > 0 || info->decrypts > 0) ||
+            (info->encrypts > 0 || info->decrypts > 0) &&
             (info->key_identifier[0] != '\0' || get_ec_key_identifier(eckey, info)))
         {
             log_notice("%s,%d,%d,%ld,%ld",
@@ -69,7 +69,10 @@ static void ec_index_free_key(void *parent, void *ptr, CRYPTO_EX_DATA *ad,
         OPENSSL_free(info);
     }
 
-    EC_KEY_set_ex_data(eckey, ec_keysinuse_info_index, NULL);
+    if (eckey != NULL)
+    {
+        EC_KEY_set_ex_data(eckey, ec_keysinuse_info_index, NULL);
+    }
 }
 
 static void on_ec_key_used(EC_KEY *eckey, unsigned int usage)
@@ -141,6 +144,9 @@ static void on_ec_key_used(EC_KEY *eckey, unsigned int usage)
 
 static int get_ec_key_identifier(EC_KEY *eckey, keysinuse_info *info)
 {
+    if (eckey == NULL)
+        return 0;
+
     int ret = 1;
     unsigned char *key_buf = NULL,
                   *key_buf_start = NULL;
