@@ -12,7 +12,7 @@ void test_reload_cert(const char *pem_path, int iterations)
         mcount_post, fcount_post,
         mcount_net, fcount_net;
     FILE *fp;
-    X509 *cert;
+    X509 *cert, *copy_cert;
 
     if ((fp = fopen(pem_path, "r")) == NULL)
     {
@@ -28,7 +28,9 @@ void test_reload_cert(const char *pem_path, int iterations)
     for (int i = 0; i < iterations; i++)
     {
         cert = PEM_read_X509(fp, NULL, NULL, NULL);
+        copy_cert = X509_dup(cert);
         X509_free(cert);
+        X509_free(copy_cert);
         rewind(fp);
     }
 
@@ -38,15 +40,13 @@ void test_reload_cert(const char *pem_path, int iterations)
     mcount_net = mcount_post - mcount_pre;
     fcount_net = fcount_post - fcount_pre;
 
-    printf("\tTotal allocations: %d\n", mcount_net);
-    printf("\tTotal frees: %d\n", fcount_net);
+    printf("\tTotal allocations: %d\n", mcount_pre);
+    printf("\tTotal frees: %d\n", fcount_pre);
     printf("\tAllocations - free: %d\n", mcount_net - fcount_net);
 }
 
 int main(int argc, char *argv[])
 {
-    CRYPTO_set_mem_debug(1);
-
     if (!OPENSSL_init_crypto(OPENSSL_INIT_ENGINE_DYNAMIC | OPENSSL_INIT_LOAD_CONFIG, NULL))
     {
         return 0;
