@@ -18,14 +18,6 @@ file(GLOB src_files
 
 add_executable(keysinuse_functional ${src_files})
 
-if(USE_ASAN)
-    if (${CMAKE_VERSION} VERSION_LESS "3.13")
-        set_target_properties(keysinuse_functional PROPERTIES LINK_FLAGS "-fsanitize=address -fsanitize-recover=address")
-    else()
-        target_link_options(keysinuse_functional PRIVATE -fsanitize=address -fsanitize-recover=address)
-    endif()
-endif()
-
 target_link_libraries(keysinuse_functional
     ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/test/libkeysinuse_test_common.a
     ${OPENSSL_CRYPTO_LIBRARY}

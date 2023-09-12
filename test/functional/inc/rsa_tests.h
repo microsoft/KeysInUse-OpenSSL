@@ -21,6 +21,7 @@ public:
     }
     static bool IsConfigured();
     bool Setup();
+    bool KeyLifecycle();
     bool PrivateEncrypt();
     bool PrivateDecrypt();
     bool SignVerify();

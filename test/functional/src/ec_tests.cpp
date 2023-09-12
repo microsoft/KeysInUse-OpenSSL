@@ -54,6 +54,26 @@ bool EcTests::Setup()
     return true;
 }
 
+bool EcTests::KeyLifecycle()
+{
+    Cleanup();
+    shared_ptr<EC_KEY> ecKeyPair(
+        PEM_read_bio_ECPrivateKey(ecBio.get(), nullptr, nullptr, nullptr),
+        EC_KEY_free);
+
+    if (ecKeyPair == nullptr)
+    {
+        return TestFailOpenSSLError("Failed to read EC key from PEM");
+    }
+
+    ecKeyPair.reset();
+
+    // Free empty key
+    EC_KEY_free(NULL);
+
+    return CheckLog(m_logLocation, ec_keyid, 0, 0, 0);
+}
+
 bool EcTests::SignVerify()
 {
     Cleanup();
@@ -79,6 +99,15 @@ bool EcTests::SignVerify()
             ecKeyPair.get()))
     {
         return TestFailOpenSSLError("Failed to sign data with EC private key");
+    }
+
+    BIO_reset(ecBio.get());
+    ecKeyPair.reset(
+        PEM_read_bio_ECPrivateKey(ecBio.get(), nullptr, nullptr, nullptr),
+        EC_KEY_free);
+    if (ecKeyPair == nullptr)
+    {
+        return TestFailOpenSSLError("Failed to read EC key from PEM");
     }
 
     if (!ECDSA_verify(

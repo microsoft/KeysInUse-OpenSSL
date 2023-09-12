@@ -54,6 +54,26 @@ bool RsaTests::Setup()
     return true;
 }
 
+bool RsaTests::KeyLifecycle()
+{
+    Cleanup();
+    // Create and destroy key without using
+    shared_ptr<RSA> rsaKeypair(
+        PEM_read_bio_RSAPrivateKey(rsaBio.get(), nullptr, nullptr, nullptr),
+        RSA_free);
+    if (rsaKeypair == nullptr)
+    {
+        return TestFailOpenSSLError("Failed to read RSA keypair from PEM");
+    }
+
+    rsaKeypair.reset();
+
+    // Free empty key
+    RSA_free(NULL);
+
+    return CheckLog(m_logLocation, rsa_keyid, 0, 0, 0);
+}
+
 bool RsaTests::PrivateEncrypt()
 {
     Cleanup();
@@ -79,6 +99,15 @@ bool RsaTests::PrivateEncrypt()
         return TestFailOpenSSLError("Failed to encrypt data with RSA private key");
     }
 
+    BIO_reset(rsaBio.get());
+    rsaKeypair.reset(
+        PEM_read_bio_RSAPrivateKey(rsaBio.get(), nullptr, nullptr, nullptr),
+        RSA_free);
+    if (rsaKeypair == nullptr)
+    {
+        return TestFailOpenSSLError("Failed to read RSA keypair from PEM");
+    }
+
     if (RSA_public_decrypt(
             ciphertext_len,
             ciphertext,
@@ -93,6 +122,7 @@ bool RsaTests::PrivateEncrypt()
     {
         return TestFail("Recovered m_plaintext does not match m_plaintext");
     }
+
     return CheckLog(m_logLocation, rsa_keyid, 1, 0, 1);
 }
 
@@ -118,6 +148,15 @@ bool RsaTests::PrivateDecrypt()
             RSA_PKCS1_PADDING) < ciphertext_len)
     {
         return TestFailOpenSSLError("Failed to encrypt data with RSA public key");
+    }
+
+    BIO_reset(rsaBio.get());
+    rsaKeypair.reset(
+        PEM_read_bio_RSAPrivateKey(rsaBio.get(), nullptr, nullptr, nullptr),
+        RSA_free);
+    if (rsaKeypair == nullptr)
+    {
+        return TestFailOpenSSLError("Failed to read RSA keypair from PEM");
     }
 
     if (RSA_private_decrypt(
@@ -159,6 +198,15 @@ bool RsaTests::SignVerify()
             rsaKeypair.get()))
     {
         return TestFailOpenSSLError("Failed to sign data with RSA private key");
+    }
+
+    BIO_reset(rsaBio.get());
+    rsaKeypair.reset(
+        PEM_read_bio_RSAPrivateKey(rsaBio.get(), nullptr, nullptr, nullptr),
+        RSA_free);
+    if (rsaKeypair == nullptr)
+    {
+        return TestFailOpenSSLError("Failed to read RSA keypair from PEM");
     }
 
     if (!RSA_verify(

@@ -12,6 +12,12 @@ using namespace std;
 
 const char *logging_id = "functionaltest";
 
+int mem_leaks_cb(const char *str, size_t len, void *u)
+{
+    TestFail(str);
+    return 1;
+}
+
 int main(int argc, char **argv)
 {
     bool isRsaConfigured = false;
@@ -19,6 +25,7 @@ int main(int argc, char **argv)
     bool isEvpConfigured = false;
 
     char logLocation[LOG_PATH_LEN + 1];
+    CRYPTO_mem_ctrl(CRYPTO_MEM_CHECK_ON);
 
     // Call OPENSSL_init_crypto to force config file load
     RunTest("== Setup ==", [&]()
@@ -109,7 +116,6 @@ int main(int argc, char **argv)
 
         return true;
     });
-
     // RSA APIs
     if (isRsaConfigured)
     {
@@ -117,6 +123,7 @@ int main(int argc, char **argv)
 
         if (RunTest("== RSA setup ==",            std::bind(&RsaTests::Setup, &rsaTests)));
         {
+            RunTest("== RSA Key Lifecycle ==",    std::bind(&RsaTests::KeyLifecycle, &rsaTests));
             RunTest("== RSA private encrypt ==",  std::bind(&RsaTests::PrivateEncrypt, &rsaTests));
             RunTest("== RSA private decrypt ==",  std::bind(&RsaTests::PrivateDecrypt, &rsaTests));
             RunTest("== RSA sign/verify ==",      std::bind(&RsaTests::SignVerify, &rsaTests));
@@ -126,11 +133,12 @@ int main(int argc, char **argv)
 
     // EC_KEY APIs
     if (isEcConfigured)
-{
+    {
         EcTests ecTests(logLocation);
 
         if (RunTest("== EC setup ==",            std::bind(&EcTests::Setup, &ecTests)))
         {
+            RunTest("== EC Key Lifecycle ==",    std::bind(&EcTests::KeyLifecycle, &ecTests));
             RunTest("== EC sign/verify ==",      std::bind(&EcTests::SignVerify, &ecTests));
             RunTest("== EC events throttled ==", std::bind(&EcTests::EventThrottling, &ecTests));
         }
@@ -149,5 +157,12 @@ int main(int argc, char **argv)
             RunTest("== EVP events throttled ==", std::bind(&EvpTests::EventThrottling, &evpTests));
         }
     }
+
+#ifndef OPENSSL_NO_CRYPTO_MDEBUG
+    RunTest("== Memory leaks ==", [&] () {
+        return CRYPTO_mem_leaks_cb(mem_leaks_cb, NULL) == 1;
+    });
+#endif
+
     TestFinish();
 }
