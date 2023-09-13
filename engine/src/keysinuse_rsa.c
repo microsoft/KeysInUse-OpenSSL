@@ -74,7 +74,7 @@ static void rsa_index_free_key(void *parent, void *ptr, CRYPTO_EX_DATA *ad,
 
 static int get_rsa_key_identifier(RSA *rsa, keysinuse_info *info)
 {
-    if (!RSA_check_key(rsa))
+    if (rsa == NULL)
         return 0;
 
     int ret = 1;

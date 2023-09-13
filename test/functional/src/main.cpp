@@ -116,6 +116,7 @@ int main(int argc, char **argv)
 
         return true;
     });
+
     // RSA APIs
     if (isRsaConfigured)
     {
@@ -123,11 +124,12 @@ int main(int argc, char **argv)
 
         if (RunTest("== RSA setup ==",            std::bind(&RsaTests::Setup, &rsaTests)));
         {
-            RunTest("== RSA Key Lifecycle ==",    std::bind(&RsaTests::KeyLifecycle, &rsaTests));
+            RunTest("== RSA Key lifecycle ==",    std::bind(&RsaTests::KeyLifecycle, &rsaTests));
             RunTest("== RSA private encrypt ==",  std::bind(&RsaTests::PrivateEncrypt, &rsaTests));
             RunTest("== RSA private decrypt ==",  std::bind(&RsaTests::PrivateDecrypt, &rsaTests));
             RunTest("== RSA sign/verify ==",      std::bind(&RsaTests::SignVerify, &rsaTests));
             RunTest("== RSA events throttled ==", std::bind(&RsaTests::EventThrottling, &rsaTests));
+            RunTest("== Memory usage ==",         std::bind(&RsaTests::TestMemory, &rsaTests));
         }
     }
 
@@ -138,9 +140,10 @@ int main(int argc, char **argv)
 
         if (RunTest("== EC setup ==",            std::bind(&EcTests::Setup, &ecTests)))
         {
-            RunTest("== EC Key Lifecycle ==",    std::bind(&EcTests::KeyLifecycle, &ecTests));
+            RunTest("== EC Key lifecycle ==",    std::bind(&EcTests::KeyLifecycle, &ecTests));
             RunTest("== EC sign/verify ==",      std::bind(&EcTests::SignVerify, &ecTests));
             RunTest("== EC events throttled ==", std::bind(&EcTests::EventThrottling, &ecTests));
+            RunTest("== Memory usage ==",        std::bind(&EcTests::TestMemory, &ecTests));
         }
     }
 

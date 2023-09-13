@@ -4,10 +4,12 @@
 
 #include "keysinuse_engine.h"
 
+#include <iostream>
 #include <openssl/ec.h>
 #include <openssl/engine.h>
 #include <openssl/pem.h>
 #include <openssl/rand.h>
+#include <sys/resource.h>
 
 using namespace std;
 
@@ -172,4 +174,84 @@ bool EcTests::EventThrottling()
     // been tracked and logged
     ecKeyPair.reset();
     return CheckLog(m_logLocation, ec_keyid, 2, 0, 2);
+}
+
+bool EcTests::TestMemory()
+{
+    Cleanup();
+
+    struct rusage usage_start;
+    struct rusage usage_current;
+
+    if (getrusage(RUSAGE_SELF, &usage_start) != 0)
+    {
+        return TestFail("Failed to get resource usage: %d", errno);
+    }
+
+    // Reload private key
+    shared_ptr<EC_KEY> ecKeyPair(
+        PEM_read_bio_ECPrivateKey(ecBio.get(), nullptr, nullptr, nullptr),
+        EC_KEY_free);
+
+    if (ecKeyPair == nullptr)
+    {
+        return TestFailOpenSSLError("Failed to read EC key from PEM");
+    }
+
+    for (int i = 0; i < m_memoryIterations; i++)
+    {
+        BIO_reset(ecBio.get());
+        shared_ptr<EC_KEY> ecKeyPair(
+            PEM_read_bio_ECPrivateKey(ecBio.get(), nullptr, nullptr, nullptr),
+            EC_KEY_free);
+
+        if (ecKeyPair == nullptr)
+        {
+            return TestFailOpenSSLError("Failed to read EC key from PEM");
+        }
+    }
+
+    if (getrusage(RUSAGE_SELF, &usage_current) != 0)
+    {
+        return TestFail("Failed to get resource usage: %d", errno);
+    }
+    std::cout << "\tKeypair reload: " << usage_current.ru_maxrss - usage_start.ru_maxrss << std::endl;
+    unsigned int siglen = ECDSA_size(ecKeyPair.get());
+    unsigned char signature[siglen];
+    unsigned char recoveredPlaintext[m_plaintextLen];
+
+    for (int i = 0; i < m_memoryIterations; i++)
+    {
+        // Sign with the private key twice. Only one event should be logged,
+        // but the second encrypt should be tracked
+        if (!ECDSA_sign(
+                0,
+                m_plaintext,
+                m_plaintextLen,
+                signature,
+                &siglen,
+                ecKeyPair.get()))
+        {
+            return TestFailOpenSSLError("Failed to sign data with EC private key");
+        }
+
+        if (!ECDSA_sign(
+                0,
+                m_plaintext,
+                m_plaintextLen,
+                signature,
+                &siglen,
+                ecKeyPair.get()))
+        {
+            return TestFailOpenSSLError("Failed to sign data a second time with EC private key");
+        }
+    }
+
+    if (getrusage(RUSAGE_SELF, &usage_current) != 0)
+    {
+        return TestFail("Failed to get resource usage: %d", errno);
+    }
+    std::cout << "\tSign/Verify: " << usage_current.ru_maxrss - usage_start.ru_maxrss << std::endl;
+
+    return usage_current.ru_maxrss - usage_start.ru_maxrss < m_kbToFailMemoryTest;
 }

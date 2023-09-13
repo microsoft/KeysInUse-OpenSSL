@@ -77,7 +77,8 @@ void log_init()
 
         // If sprintf fails, we can still log key usage. This should never
         // happen, but we don't want to cause any crashes in case it does.
-        if (snprintf(iden, iden_len, "%ld,%s", start_time, exe_path) < 0)
+        if (iden == NULL ||
+            snprintf(iden, iden_len + 1, "%ld,%s", start_time, exe_path) < 0)
         {
             OPENSSL_free(iden);
             iden = (char*)default_iden;

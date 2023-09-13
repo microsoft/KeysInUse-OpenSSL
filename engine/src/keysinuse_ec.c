@@ -148,7 +148,7 @@ static void on_ec_key_used(EC_KEY *eckey, unsigned int usage)
 
 static int get_ec_key_identifier(EC_KEY *eckey, keysinuse_info *info)
 {
-    if (!EC_KEY_check_key(eckey))
+    if (eckey == NULL)
         return 0;
 
     int ret = 1;
