@@ -2,7 +2,6 @@
 
 #ifdef __linux__
 #include <linux/limits.h>
-#include <linux/stat.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>

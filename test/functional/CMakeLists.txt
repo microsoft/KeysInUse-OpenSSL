@@ -21,5 +21,5 @@ add_executable(keysinuse_functional ${src_files})
 target_link_libraries(keysinuse_functional
     ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}/test/libkeysinuse_test_common.a
     ${OPENSSL_CRYPTO_LIBRARY}
-    -lstdc++fs
+    -static-libstdc++
 )
