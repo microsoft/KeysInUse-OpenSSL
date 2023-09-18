@@ -2,6 +2,7 @@
 
 #ifdef __linux__
 #include <linux/limits.h>
+#include <linux/stat.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -164,11 +165,11 @@ static void _log_internal(int level, const char *message, va_list args)
         // 1. File isn't a symlink
         // 2. File permissions are 0200
         // 3. Logging won't exceed maximum file size
-        struct stat sb;
-        if (stat(log_path, &sb) != -1)
+        struct statx sb;
+        if (statx(0, log_path, AT_SYMLINK_NOFOLLOW, STATX_MODE | STATX_SIZE, &sb) != -1)
         {
             int isBadFile = 0;
-            if (S_ISLNK(sb.st_mode))
+            if (S_ISLNK(sb.stx_mode))
             {
                 if (level > LOG_ERR)
                 {
@@ -177,11 +178,11 @@ static void _log_internal(int level, const char *message, va_list args)
                 isBadFile = 1;
             }
 
-            if (!isBadFile && (sb.st_mode & 0777) != 0200)
+            if (!isBadFile && (sb.stx_mode & 0777) != 0200)
             {
                 if (level > LOG_ERR)
                 {
-                    log_error("Found unexpected permissions (%o) on %s. Removing file", (sb.st_mode & 0777), log_path);
+                    log_error("Found unexpected permissions (%o) on %s. Removing file", (sb.stx_mode & 0777), log_path);
                 }
                 isBadFile = 1;
             }
@@ -197,7 +198,7 @@ static void _log_internal(int level, const char *message, va_list args)
                     return;
                 }
             }
-            else if (sb.st_size + len > max_file_size)
+            else if (sb.stx_size + len > max_file_size)
             {
                 if (level > LOG_ERR)
                 {

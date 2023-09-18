@@ -27,4 +27,5 @@ if(NOT CMAKE_HOST_SYSTEM_PROCESSOR MATCHES ARM64|aarch64)
     add_compile_options(-I${CXX_CROSS_INCLUDE_DIR}/${TARGET_TRIPLE})
 endif()
 
+add_definitions(-D_GNU_SOURCE)
 add_compile_options(-O3)
