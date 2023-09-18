@@ -164,11 +164,25 @@ static void _log_internal(int level, const char *message, va_list args)
         // 1. File isn't a symlink
         // 2. File permissions are 0200
         // 3. Logging won't exceed maximum file size
-        struct statx sb;
-        if (statx(0, log_path, AT_SYMLINK_NOFOLLOW, STATX_MODE | STATX_SIZE, &sb) != -1)
+
+        mode_t stat_mode;
+        off_t stat_size;
+#ifdef _GNU_SOURCE
+        struct statx sbx;
+        if (statx(0, log_path, AT_SYMLINK_NOFOLLOW, STATX_MODE | STATX_SIZE, &sbx) != -1 &&
+            sbx.stx_size < LONG_MAX)
         {
+            stat_mode = sbx.stx_mode;
+            stat_size = sbx.stx_size;
+#else
+        struct stat sb;
+        if (stat(log_path, &sb) != -1)
+        {
+            stat_mode = sb.st_mode;
+            stat_size = sb.st_size;
+#endif
             int isBadFile = 0;
-            if (S_ISLNK(sb.stx_mode))
+            if (S_ISLNK(stat_mode))
             {
                 if (level > LOG_ERR)
                 {
@@ -177,11 +191,11 @@ static void _log_internal(int level, const char *message, va_list args)
                 isBadFile = 1;
             }
 
-            if (!isBadFile && (sb.stx_mode & 0777) != 0200)
+            if (!isBadFile && (stat_mode & 0777) != 0200)
             {
                 if (level > LOG_ERR)
                 {
-                    log_error("Found unexpected permissions (%o) on %s. Removing file", (sb.stx_mode & 0777), log_path);
+                    log_error("Found unexpected permissions (%o) on %s. Removing file", (stat_mode & 0777), log_path);
                 }
                 isBadFile = 1;
             }
@@ -197,7 +211,7 @@ static void _log_internal(int level, const char *message, va_list args)
                     return;
                 }
             }
-            else if (sb.stx_size + len > max_file_size)
+            else if (stat_size + len > max_file_size)
             {
                 if (level > LOG_ERR)
                 {
