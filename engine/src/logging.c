@@ -17,12 +17,6 @@
 // unix time + , + executable path
 #define ID_LEN_MAX 21 + PATH_MAX
 
-#ifndef __x86_64__
-#define STAT_VER 3
-#else
-#define STAT_VER 1
-#endif
-
 static const char *default_log_id = "default";
 static const char *default_iden = "";
 static char log_id[LOG_ID_LEN_MAX+1] = {0};
@@ -171,7 +165,7 @@ static void _log_internal(int level, const char *message, va_list args)
         // 2. File permissions are 0200
         // 3. Logging won't exceed maximum file size
         struct stat sb;
-        if (__xstat(STAT_VER, log_path, &sb) != -1)
+        if (__xstat(1, log_path, &sb) != -1)
         {
             int isBadFile = 0;
             if (S_ISLNK(sb.st_mode))
