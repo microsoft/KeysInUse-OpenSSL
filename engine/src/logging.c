@@ -13,6 +13,14 @@
 #include <string.h>
 #include <openssl/crypto.h>
 
+#ifdef _STAT_VER
+    #define STAT_VER _STAT_VER
+#elif defined __aarch64__
+    #define STAT_VER 0
+#elif defined __x86_64__
+    #define STAT_VER 1
+#endif
+
 #define LOG_ID_LEN_MAX 16
 // unix time + , + executable path
 #define ID_LEN_MAX 21 + PATH_MAX
@@ -165,7 +173,7 @@ static void _log_internal(int level, const char *message, va_list args)
         // 2. File permissions are 0200
         // 3. Logging won't exceed maximum file size
         struct stat sb;
-        if (__xstat(1, log_path, &sb) != -1)
+        if (__xstat(STAT_VER, log_path, &sb) != -1)
         {
             int isBadFile = 0;
             if (S_ISLNK(sb.st_mode))
@@ -177,7 +185,7 @@ static void _log_internal(int level, const char *message, va_list args)
 #ifdef DEBUG
                 else
                 {
-                    fprintf(stderr, "Found symlink at %s. Removing file", log_path);
+                    fprintf(stderr, "Found symlink at %s. Removing file\n", log_path);
                 }
 #endif // DEBUG
 
@@ -193,7 +201,7 @@ static void _log_internal(int level, const char *message, va_list args)
 #ifdef DEBUG
                 else
                 {
-                    fprintf(stderr, "Found unexpected permissions (%o) on %s. Removing file", (sb.st_mode & 0777), log_path);
+                    fprintf(stderr, "Found unexpected permissions (%o) on %s. Removing file\n", (sb.st_mode & 0777), log_path);
                 }
 #endif // DEBUG
                 isBadFile = 1;
@@ -210,7 +218,7 @@ static void _log_internal(int level, const char *message, va_list args)
     #ifdef DEBUG
                 else
                 {
-                    fprintf(stderr, "Failed to remove bad log file at %s,SYS_%d", log_path, errno);
+                    fprintf(stderr, "Failed to remove bad log file at %s,SYS_%d\n", log_path, errno);
                 }
 #endif // DEBUG
                     return;
@@ -225,7 +233,7 @@ static void _log_internal(int level, const char *message, va_list args)
 #ifdef DEBUG
                 else
                 {
-                    fprintf(stderr, "Failed to log to %s. File size capped at %ld bytes", log_path, max_file_size);
+                    fprintf(stderr, "Failed to log to %s. File size capped at %ld bytes\n", log_path, max_file_size);
                 }
 #endif // DEBUG
                 return;
@@ -240,7 +248,7 @@ static void _log_internal(int level, const char *message, va_list args)
 #ifdef DEBUG
             else
             {
-                fprintf(stderr, "Failed to stat file at %s,SYS_%d", log_path, errno);
+                fprintf(stderr, "Failed to stat file at %s,SYS_%d\n", log_path, errno);
             }
 #endif // DEBUG
             return;
@@ -267,7 +275,7 @@ static void _log_internal(int level, const char *message, va_list args)
 #ifdef DEBUG
             else
             {
-                fprintf(stderr, "Failed to open log file for appending at %s,SYS_%d", log_path, errno);
+                fprintf(stderr, "Failed to open log file for appending at %s,SYS_%d\n", log_path, errno);
             }
 #endif // DEBUG
             return;
@@ -283,7 +291,7 @@ static void _log_internal(int level, const char *message, va_list args)
 #ifdef DEBUG
             else
             {
-                fprintf(stderr, "Failed to write to log file at %s,SYS_%d", log_path, errno);
+                fprintf(stderr, "Failed to write to log file at %s,SYS_%d\n", log_path, errno);
             }
 #endif // DEBUG
         }
@@ -297,7 +305,7 @@ static void _log_internal(int level, const char *message, va_list args)
 #ifdef DEBUG
             else
             {
-                fprintf(stderr, "Failed to close log file at %s,SYS_%d", log_path, errno);
+                fprintf(stderr, "Failed to close log file at %s,SYS_%d\n", log_path, errno);
             }
 #endif // DEBUG
         }
