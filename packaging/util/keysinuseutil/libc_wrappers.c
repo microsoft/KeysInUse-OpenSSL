@@ -3,10 +3,12 @@
 // cgo to access the openssl config, but still need to support
 // systems with glibc < 2.32. This file contains wrappers for
 // those functions to ensure compatability with older systems.
+#define _GNU_SOURCE
 
 #include <signal.h>
 #include <pthread.h>
 
+#ifdef _USE_GNU
 #if defined __aarch64__
     __asm__(".symver pthread_sigmask,pthread_sigmask@GLIBC_2.17");
     __asm__(".symver pthread_create,pthread_create@GLIBC_2.17");
@@ -20,6 +22,7 @@
     __asm__(".symver pthread_attr_getstacksize,pthread_attr_getstacksize@GLIBC_2.2.5");
     __asm__(".symver __libc_start_main,__libc_start_main@GLIBC_2.2.5");
 #endif
+#endif //_USE_GNU
 
 extern int __libc_start_main(int *(main) (int, char * *, char * *),
                              int argc,
