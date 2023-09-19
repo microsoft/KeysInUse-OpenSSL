@@ -174,6 +174,13 @@ static void _log_internal(int level, const char *message, va_list args)
                 {
                     log_error("Found symlink at %s. Removing file", log_path);
                 }
+#ifdef DEBUG
+                else
+                {
+                    fprintf(stderr, "Found symlink at %s. Removing file", log_path);
+                }
+#endif // DEBUG
+
                 isBadFile = 1;
             }
 
@@ -183,6 +190,12 @@ static void _log_internal(int level, const char *message, va_list args)
                 {
                     log_error("Found unexpected permissions (%o) on %s. Removing file", (sb.st_mode & 0777), log_path);
                 }
+#ifdef DEBUG
+                else
+                {
+                    fprintf(stderr, "Found unexpected permissions (%o) on %s. Removing file", (sb.st_mode & 0777), log_path);
+                }
+#endif // DEBUG
                 isBadFile = 1;
             }
 
@@ -194,6 +207,12 @@ static void _log_internal(int level, const char *message, va_list args)
                     {
                         log_error("Failed to remove bad log file at %s,SYS_%d", log_path, errno);
                     }
+    #ifdef DEBUG
+                else
+                {
+                    fprintf(stderr, "Failed to remove bad log file at %s,SYS_%d", log_path, errno);
+                }
+#endif // DEBUG
                     return;
                 }
             }
@@ -203,6 +222,12 @@ static void _log_internal(int level, const char *message, va_list args)
                 {
                     log_error("Failed to log to %s. File size capped at %ld bytes", log_path, max_file_size);
                 }
+#ifdef DEBUG
+                else
+                {
+                    fprintf(stderr, "Failed to log to %s. File size capped at %ld bytes", log_path, max_file_size);
+                }
+#endif // DEBUG
                 return;
             }
         }
@@ -212,6 +237,12 @@ static void _log_internal(int level, const char *message, va_list args)
             {
                 log_error("Failed to stat file at %s,SYS_%d", log_path, errno);
             }
+#ifdef DEBUG
+            else
+            {
+                fprintf(stderr, "Failed to stat file at %s,SYS_%d", log_path, errno);
+            }
+#endif // DEBUG
             return;
         }
 
@@ -233,18 +264,42 @@ static void _log_internal(int level, const char *message, va_list args)
             {
                 log_error("Failed to open log file for appending at %s,SYS_%d", log_path, errno);
             }
+#ifdef DEBUG
+            else
+            {
+                fprintf(stderr, "Failed to open log file for appending at %s,SYS_%d", log_path, errno);
+            }
+#endif // DEBUG
             return;
         }
         fchmod(fd, 0200);
 
-        if (write(fd, prefixed_msg, len) < 0 && level > LOG_ERR)
+        if (write(fd, prefixed_msg, len) < 0)
         {
-            log_error("Failed to write to log file at %s,SYS_%d", log_path, errno);
+            if (level > LOG_ERR)
+            {
+                log_error("Failed to write to log file at %s,SYS_%d", log_path, errno);
+            }
+#ifdef DEBUG
+            else
+            {
+                fprintf(stderr, "Failed to write to log file at %s,SYS_%d", log_path, errno);
+            }
+#endif // DEBUG
         }
 
         if (close(fd) < 0 && level > LOG_ERR)
         {
-            log_error("Failed to close log file at %s,SYS_%d", log_path, errno);
+            if (level > LOG_ERR)
+            {
+                log_error("Failed to close log file at %s,SYS_%d", log_path, errno);
+            }
+#ifdef DEBUG
+            else
+            {
+                fprintf(stderr, "Failed to close log file at %s,SYS_%d", log_path, errno);
+            }
+#endif // DEBUG
         }
 #endif //__linux__
 #ifdef _WIN32
