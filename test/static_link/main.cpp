@@ -58,6 +58,12 @@ int main(int argc, char **argv)
 
         // engine_id = keysinuse
         char* conf_value = NCONF_get_string(conf, keysinuse_conf_section, conf_key_engine_id);
+        // Config value may not be present on Mariner
+        if (conf_value == nullptr)
+        {
+            return true;
+        }
+
         if (strcmp(engine_id, conf_value) != 0)
         {
             TestFail("Failed to get expected %s."
@@ -71,6 +77,12 @@ int main(int argc, char **argv)
 
         // default_algorithms = RSA,EC
         conf_value = NCONF_get_string(conf, keysinuse_conf_section, conf_key_default_algorithms);
+        // Config value may not be present on Mariner
+        if (conf_value == nullptr)
+        {
+            return true;
+        }
+
         if (strcmp(conf_val_default_algorithms_expected, conf_value) != 0)
         {
             TestFail("Failed to get expected %s."
@@ -82,7 +94,7 @@ int main(int argc, char **argv)
             TestFinish();
         }
 
-        // dynamic_path exists
+        // dynamic_path exists.
         conf_value = NCONF_get_string(conf, keysinuse_conf_section, conf_key_dynamic_path);
         if (conf_value == nullptr)
         {
