@@ -25,6 +25,12 @@ const char* symname_bind_engine = "bind_engine";
 int main(int argc, char **argv)
 {
     string keysinuse_so_path;
+
+    if (argc > 1)
+    {
+        keysinuse_so_path = argv[1];
+    }
+
     RunTest("== Setup ==", [] ()
     {
         if (!OPENSSL_init_crypto(OPENSSL_INIT_ENGINE_DYNAMIC |
