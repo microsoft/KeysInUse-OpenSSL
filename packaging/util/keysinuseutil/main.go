@@ -1,8 +1,6 @@
 package main
 
 /*
-#cgo LDFLAGS: -L/usr/include/openssl -lcrypto -lpthread
-
 #include <openssl/conf.h>
 #include <openssl/crypto.h>
 #include <openssl/err.h>

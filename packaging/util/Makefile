@@ -20,7 +20,7 @@ endif
 all: $(KEYSINUSEUTIL) $(KEYID)
 
 $(KEYSINUSEUTIL):
-	CGO_ENABLED=1 CGO_LDFLAGS='-lcrypto' CC=$(CC) GOOS=$(GOOS) GOARCH=$(GOARCH) \
+	CGO_ENABLED=1 CGO_LDFLAGS='-lcrypto -lpthread' CC=$(CC) GOOS=$(GOOS) GOARCH=$(GOARCH) \
 		go build \
 		-ldflags "-extldflags '-Wl,--wrap=pthread_sigmask,--wrap=pthread_create,--wrap=pthread_detach,--wrap=pthread_attr_getstacksize,--wrap=__libc_start_main' -linkmode external" \
 		-o $(KEYSINUSEUTIL) ./keysinuseutil
