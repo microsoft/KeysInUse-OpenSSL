@@ -8,7 +8,7 @@
 #include <signal.h>
 #include <pthread.h>
 
-#ifdef _USE_GNU
+#ifdef __USE_GNU
 #if defined __aarch64__
     __asm__(".symver pthread_sigmask,pthread_sigmask@GLIBC_2.17");
     __asm__(".symver pthread_create,pthread_create@GLIBC_2.17");
