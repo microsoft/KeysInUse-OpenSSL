@@ -297,14 +297,17 @@ int keysinuse_rsa_sign(int type, const unsigned char *m, unsigned int m_len,
     RSA_sign will go to passthrough_rsa_sign instead of this function.
     The operation will succeed, but the key use won't be tracked.
     */
-    if (rsa_meth != NULL && passthrough_rsa_sign != NULL)
+    if (rsa_meth != NULL &&
+        passthrough_rsa_sign != NULL &&
+        cur_rsa_sign != NULL)
     {
         RSA_meth_set_sign((RSA_METHOD*)rsa_meth, passthrough_rsa_sign);
     }
 
     int ret = RSA_sign(type, m, m_len, sigret, siglen, (RSA*)rsa);
 
-    if (rsa_meth != NULL && cur_rsa_sign != NULL)
+    if (rsa_meth != NULL &&
+        cur_rsa_sign != NULL)
     {
         RSA_meth_set_sign((RSA_METHOD*)rsa_meth, cur_rsa_sign);
     }
