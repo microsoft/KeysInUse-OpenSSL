@@ -112,12 +112,15 @@ static int on_rsa_evp_key_used(PFN_PKEY_RSA_sign passthrough_rsa_sign, EVP_PKEY_
                                 const unsigned char *tbs, size_t tbslen)
 {
     keysinuse_info *info = NULL;
-    EVP_PKEY *pkey_rsa = EVP_PKEY_CTX_get0_pkey(ctx);
-    RSA *rsa = EVP_PKEY_get0_RSA(pkey_rsa);
+    EVP_PKEY *pkey_rsa;
+    RSA *rsa;
 
     // Key usage operation was counted in the EVP layer. Ensure
     // lower level API doesn't double count the signing operation.
-    if (get_RSA_keysinuse_info(rsa, &info))
+    if (ctx != NULL &&
+        (pkey_rsa = EVP_PKEY_CTX_get0_pkey(ctx)) != NULL &&
+        (rsa = EVP_PKEY_get0_RSA(pkey_rsa)) != NULL &&
+        get_RSA_keysinuse_info(rsa, &info))
     {
         if (sig != NULL)
         {

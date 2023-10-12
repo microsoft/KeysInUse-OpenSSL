@@ -52,7 +52,9 @@ bool CheckLog(const char *logLocation, const char *keyid, int expectedSign, int 
     // Change permissions only long enough to open a stream to parse
     if (chmod(logLocation, 0400) == -1)
     {
-        return TestFail("Failed to enable reading of log file %d", errno);
+        // Special case success if file doesn't exist, but no events expected
+        return (expectedEvents == 0 && errno == ENOENT)||
+               TestFail("Failed to enable reading of log file %d", errno);
     }
 
     ifstream logFile(logLocation);

@@ -27,5 +27,4 @@ if(NOT CMAKE_HOST_SYSTEM_PROCESSOR MATCHES ARM64|aarch64)
     add_compile_options(-I${CXX_CROSS_INCLUDE_DIR}/${TARGET_TRIPLE})
 endif()
 
-set(USE_ASAN OFF CACHE BOOL "Use address sanitizers for compiling test applications")
 add_compile_options(-O3)

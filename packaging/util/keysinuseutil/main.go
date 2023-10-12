@@ -1,7 +1,6 @@
 package main
 
 /*
-#cgo amd64 LDFLAGS: -L/usr/include/openssl -lcrypto
 #include <openssl/conf.h>
 #include <openssl/crypto.h>
 #include <openssl/err.h>
@@ -434,9 +433,7 @@ func getProcsWithOpenSsl() (matchedProcs map[string]struct{}, err error) {
 	return
 }
 
-//
 // Utility functions
-//
 func printUsage(errorMsg string) {
 	log.SetOutput(os.Stderr)
 	log.Println(errorMsg)

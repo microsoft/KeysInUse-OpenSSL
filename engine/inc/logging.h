@@ -15,6 +15,7 @@
 // log_init should only be run once per process
 void set_logging_id(char* id);
 void log_init();
+void log_cleanup();
 void log_debug(const char *message, ...);
 void log_error(const char *message, ...);
 void log_notice(const char *message, ...);

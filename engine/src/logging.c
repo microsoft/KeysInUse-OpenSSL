@@ -13,14 +13,23 @@
 #include <string.h>
 #include <openssl/crypto.h>
 
-static const char *default_log_id = "default";
-static const size_t log_id_len_max = 16;
+#ifdef _STAT_VER
+    #define STAT_VER _STAT_VER
+#elif defined __aarch64__
+    #define STAT_VER 0
+#elif defined __x86_64__
+    #define STAT_VER 1
+#endif
 
-static char *log_id;
+#define LOG_ID_LEN_MAX 16
+// unix time + , + executable path
+#define ID_LEN_MAX 21 + PATH_MAX
+
+static const char *default_log_id = "default";
+static const char *default_iden = "";
+static char log_id[LOG_ID_LEN_MAX+1] = {0};
 static char *iden;
 static int iden_len;
-static unsigned int ref_count = 0;
-static CRYPTO_RWLOCK *ref_count_lock;
 
 // Max file size in bytes. Currently not set but
 // may be added as a parameter later if needed
@@ -28,34 +37,17 @@ static long max_file_size = __LONG_MAX__;
 
 void set_logging_id(char *id)
 {
-    size_t id_len;
-
-    // Reset log_id
-    if (log_id != NULL &&
-        log_id != (char *)default_log_id)
-    {
-        OPENSSL_free(log_id);
-    }
-    log_id = NULL;
-
-    // Allocate new log_id capped at 16 bytes
+    // Restrict log id length
     if (id != NULL && *id != '\0')
     {
-        id_len = strlen(id);
-        id_len = id_len > log_id_len_max ? log_id_len_max : id_len;
-        log_id = OPENSSL_malloc(id_len + 1);
-    }
-
-    if (log_id != NULL)
-    {
-        strncpy(log_id, id, id_len);
+        strncpy(log_id, id, LOG_ID_LEN_MAX);
         // Ensure log_id is null terminated. If id is longer
         // than id_len then stdncpy will not null terminate log_id
-        log_id[id_len] = '\0';
+        log_id[LOG_ID_LEN_MAX] = '\0';
     }
     else
     {
-        log_id = (char *)default_log_id;
+        strcpy(log_id, default_log_id);
     }
 }
 
@@ -87,18 +79,30 @@ void log_init()
     if (exe_path)
     {
         iden_len = snprintf(NULL, 0, "%ld,%s", start_time, exe_path);
+        iden_len = iden_len > ID_LEN_MAX ? ID_LEN_MAX : iden_len;
+
         iden = OPENSSL_malloc(iden_len + 1);
 
         // If sprintf fails, we can still log key usage. This should never
         // happen, but we don't want to cause any crashes in case it does.
-        if (sprintf(iden, "%ld,%s", start_time, exe_path) < 0)
+        if (iden == NULL ||
+            snprintf(iden, iden_len + 1, "%ld,%s", start_time, exe_path) < 0)
         {
             OPENSSL_free(iden);
-            iden = "";
+            iden = (char*)default_iden;
         }
     }
 
     OPENSSL_free(exe_path);
+}
+
+void log_cleanup()
+{
+    if (iden != default_iden)
+    {
+        OPENSSL_free(iden);
+        iden = (char *)default_iden;
+    }
 }
 
 void log_debug(const char *message, ...)
@@ -169,7 +173,7 @@ static void _log_internal(int level, const char *message, va_list args)
         // 2. File permissions are 0200
         // 3. Logging won't exceed maximum file size
         struct stat sb;
-        if (stat(log_path, &sb) != -1)
+        if (__xstat(STAT_VER, log_path, &sb) != -1)
         {
             int isBadFile = 0;
             if (S_ISLNK(sb.st_mode))
@@ -178,6 +182,13 @@ static void _log_internal(int level, const char *message, va_list args)
                 {
                     log_error("Found symlink at %s. Removing file", log_path);
                 }
+#ifdef DEBUG
+                else
+                {
+                    fprintf(stderr, "Found symlink at %s. Removing file\n", log_path);
+                }
+#endif // DEBUG
+
                 isBadFile = 1;
             }
 
@@ -187,6 +198,12 @@ static void _log_internal(int level, const char *message, va_list args)
                 {
                     log_error("Found unexpected permissions (%o) on %s. Removing file", (sb.st_mode & 0777), log_path);
                 }
+#ifdef DEBUG
+                else
+                {
+                    fprintf(stderr, "Found unexpected permissions (%o) on %s. Removing file\n", (sb.st_mode & 0777), log_path);
+                }
+#endif // DEBUG
                 isBadFile = 1;
             }
 
@@ -198,6 +215,12 @@ static void _log_internal(int level, const char *message, va_list args)
                     {
                         log_error("Failed to remove bad log file at %s,SYS_%d", log_path, errno);
                     }
+    #ifdef DEBUG
+                else
+                {
+                    fprintf(stderr, "Failed to remove bad log file at %s,SYS_%d\n", log_path, errno);
+                }
+#endif // DEBUG
                     return;
                 }
             }
@@ -207,6 +230,12 @@ static void _log_internal(int level, const char *message, va_list args)
                 {
                     log_error("Failed to log to %s. File size capped at %ld bytes", log_path, max_file_size);
                 }
+#ifdef DEBUG
+                else
+                {
+                    fprintf(stderr, "Failed to log to %s. File size capped at %ld bytes\n", log_path, max_file_size);
+                }
+#endif // DEBUG
                 return;
             }
         }
@@ -216,6 +245,12 @@ static void _log_internal(int level, const char *message, va_list args)
             {
                 log_error("Failed to stat file at %s,SYS_%d", log_path, errno);
             }
+#ifdef DEBUG
+            else
+            {
+                fprintf(stderr, "Failed to stat file at %s,SYS_%d\n", log_path, errno);
+            }
+#endif // DEBUG
             return;
         }
 
@@ -237,18 +272,42 @@ static void _log_internal(int level, const char *message, va_list args)
             {
                 log_error("Failed to open log file for appending at %s,SYS_%d", log_path, errno);
             }
+#ifdef DEBUG
+            else
+            {
+                fprintf(stderr, "Failed to open log file for appending at %s,SYS_%d\n", log_path, errno);
+            }
+#endif // DEBUG
             return;
         }
         fchmod(fd, 0200);
 
-        if (write(fd, prefixed_msg, len) < 0 && level > LOG_ERR)
+        if (write(fd, prefixed_msg, len) < 0)
         {
-            log_error("Failed to write to log file at %s,SYS_%d", log_path, errno);
+            if (level > LOG_ERR)
+            {
+                log_error("Failed to write to log file at %s,SYS_%d", log_path, errno);
+            }
+#ifdef DEBUG
+            else
+            {
+                fprintf(stderr, "Failed to write to log file at %s,SYS_%d\n", log_path, errno);
+            }
+#endif // DEBUG
         }
 
         if (close(fd) < 0 && level > LOG_ERR)
         {
-            log_error("Failed to close log file at %s,SYS_%d", log_path, errno);
+            if (level > LOG_ERR)
+            {
+                log_error("Failed to close log file at %s,SYS_%d", log_path, errno);
+            }
+#ifdef DEBUG
+            else
+            {
+                fprintf(stderr, "Failed to close log file at %s,SYS_%d\n", log_path, errno);
+            }
+#endif // DEBUG
         }
 #endif //__linux__
 #ifdef _WIN32

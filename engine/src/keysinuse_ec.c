@@ -40,6 +40,9 @@ int get_EC_meth(EC_KEY_METHOD **ec_meth)
 static void ec_index_new_key(void *parent, void *ptr, CRYPTO_EX_DATA *ad,
                              int idx, long argl, void *argp)
 {
+    if (parent == NULL)
+        return;
+
     EC_KEY *eckey = (EC_KEY *)parent;
     keysinuse_info *info = new_keysinuse_info();
     EC_KEY_set_ex_data(eckey, ec_keysinuse_info_index, info);
@@ -48,6 +51,9 @@ static void ec_index_new_key(void *parent, void *ptr, CRYPTO_EX_DATA *ad,
 static void ec_index_free_key(void *parent, void *ptr, CRYPTO_EX_DATA *ad,
                               int idx, long argl, void *argp)
 {
+    if (parent == NULL)
+        return;
+
     EC_KEY *eckey = (EC_KEY *)parent;
     keysinuse_info *info = (keysinuse_info *)ptr;
 
@@ -77,7 +83,8 @@ static void ec_index_free_key(void *parent, void *ptr, CRYPTO_EX_DATA *ad,
 
 static void on_ec_key_used(EC_KEY *eckey, unsigned int usage)
 {
-    if (global_logging_disabled())
+    if (global_logging_disabled() ||
+        eckey == NULL)
         return;
 
     int can_log = 0;
@@ -199,7 +206,8 @@ int keysinuse_ec_keygen(EC_KEY *eckey){
 
     keysinuse_info *info = NULL;
 
-    if (ec_keysinuse_info_index != -1)
+    if (eckey != NULL &&
+        ec_keysinuse_info_index != -1)
     {
         info = EC_KEY_get_ex_data(eckey, ec_keysinuse_info_index);
     }

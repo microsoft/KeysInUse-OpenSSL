@@ -34,6 +34,9 @@ int get_RSA_meth(RSA_METHOD **rsa_meth)
 static void rsa_index_new_key(void *parent, void *ptr, CRYPTO_EX_DATA *ad,
                               int idx, long argl, void *argp)
 {
+    if (parent == NULL)
+        return;
+
     RSA *rsa = (RSA *)parent;
     keysinuse_info *info = new_keysinuse_info();
     RSA_set_ex_data(rsa, rsa_keysinuse_info_index, info);
@@ -42,6 +45,9 @@ static void rsa_index_new_key(void *parent, void *ptr, CRYPTO_EX_DATA *ad,
 static void rsa_index_free_key(void *parent, void *ptr, CRYPTO_EX_DATA *ad,
                                int idx, long argl, void *argp)
 {
+    if (parent == NULL)
+        return;
+
     RSA *rsa = (RSA *)parent;
     keysinuse_info *info = (keysinuse_info *)ptr;
 
@@ -123,6 +129,9 @@ end:
 
 int get_RSA_keysinuse_info(RSA* rsa, keysinuse_info **info)
 {
+    if (rsa == NULL)
+        return 0;
+
     if (rsa_keysinuse_info_index == -1)
     {
         log_error("keysinuse info index not initialized");
@@ -141,7 +150,8 @@ int get_RSA_keysinuse_info(RSA* rsa, keysinuse_info **info)
 
 void on_rsa_key_used(RSA *rsa, unsigned int usage)
 {
-    if (global_logging_disabled())
+    if (global_logging_disabled() ||
+        rsa == NULL)
         return;
 
     int can_log = 0;
@@ -255,10 +265,17 @@ int keysinuse_rsa_priv_enc(int flen, const unsigned char *from, unsigned char *t
 int keysinuse_rsa_sign(int type, const unsigned char *m, unsigned int m_len,
                    unsigned char *sigret, unsigned int *siglen, const RSA *rsa)
 {
-    const RSA_METHOD* rsa_meth = RSA_get_method(rsa);
+    const RSA_METHOD* rsa_meth = NULL;
+    PFN_RSA_sign_verify cur_rsa_sign = NULL;
+
     RSA_METHOD* passthrough_rsa_meth = (RSA_METHOD*)RSA_get_default_method();
 
-    PFN_RSA_sign_verify cur_rsa_sign = RSA_meth_get_sign(rsa_meth);
+    if (rsa != NULL)
+    {
+        rsa_meth = RSA_get_method(rsa);
+        cur_rsa_sign = RSA_meth_get_sign(rsa_meth);
+    }
+
     PFN_RSA_sign_verify passthrough_rsa_sign = NULL;
 
     if (passthrough_rsa_meth != NULL &&
@@ -283,9 +300,20 @@ int keysinuse_rsa_sign(int type, const unsigned char *m, unsigned int m_len,
     RSA_sign will go to passthrough_rsa_sign instead of this function.
     The operation will succeed, but the key use won't be tracked.
     */
-    RSA_meth_set_sign((RSA_METHOD*)rsa_meth, passthrough_rsa_sign);
+    if (rsa_meth != NULL &&
+        passthrough_rsa_sign != NULL &&
+        cur_rsa_sign != NULL)
+    {
+        RSA_meth_set_sign((RSA_METHOD*)rsa_meth, passthrough_rsa_sign);
+    }
+
     int ret = RSA_sign(type, m, m_len, sigret, siglen, (RSA*)rsa);
-    RSA_meth_set_sign((RSA_METHOD*)rsa_meth, cur_rsa_sign);
+
+    if (rsa_meth != NULL &&
+        cur_rsa_sign != NULL)
+    {
+        RSA_meth_set_sign((RSA_METHOD*)rsa_meth, cur_rsa_sign);
+    }
 
     return ret;
 }

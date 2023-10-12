@@ -29,6 +29,8 @@ int finish(ENGINE *e)
 
 int destroy(ENGINE *e)
 {
+    log_debug("Engine destroy");
+
     // Reset default engine
 #ifndef OPENSSL_NO_RSA
     RSA_METHOD *keysinuse_rsa_method = (RSA_METHOD *)ENGINE_get_RSA(e);
@@ -50,7 +52,7 @@ int destroy(ENGINE *e)
     }
 #endif // OPENSSL_NO_EC
 
-    log_debug("Engine destroy");
+    log_cleanup();
 
     return 1;
 }
